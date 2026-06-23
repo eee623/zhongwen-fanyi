@@ -1,13 +1,16 @@
 # 公开站点上线部署
 
-仓库根目录已经提供一套纯 HTML 官网，不需要 Node.js，不需要安装依赖，不需要构建。直接上传这些文件即可打开：
+仓库根目录已经提供一套正式前端静态官网，不需要 Node.js，不需要安装依赖，不需要构建。直接上传这些文件即可打开：
 
 ```text
 index.html
 privacy/index.html
 pay/index.html
-assets/site.css
-store-assets/public-site/*.png
+assets/public.css
+assets/checkout.css
+assets/checkout.js
+assets/product/*.png
+favicon.svg
 robots.txt
 ```
 
@@ -17,7 +20,7 @@ robots.txt
 - `/privacy/`：公开隐私政策，供 Chrome Web Store 填写。
 - `/pay/`：订阅收银台，承接 API 返回的 `checkout.checkoutUrl`。
 
-这套根目录页面不包含 JavaScript。支付页使用 HTML + CSS 做支付宝/微信切换，适合只要求“网站能打开、按钮能点击”的部署场景。
+这套根目录页面是静态前端文件。`assets/checkout.js` 是浏览器端脚本，用来做收银台支付方式切换和订单展示；服务器不需要安装 Node，也不需要运行任何后端进程。
 
 ## 从 GitHub 下载后部署
 
