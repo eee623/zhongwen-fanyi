@@ -1,0 +1,26 @@
+{
+  "name": "@realtime-dubbing/extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npm run build -w @realtime-dubbing/shared && wxt build",
+    "dev": "wxt",
+    "zip": "npm run build -w @realtime-dubbing/shared && wxt zip",
+    "test": "vitest run",
+    "typecheck": "npm run build -w @realtime-dubbing/shared && tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@realtime-dubbing/shared": "0.1.0",
+    "lucide-react": "^0.562.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.2",
+    "@types/chrome": "^0.2.0",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "wxt": "^0.20.26"
+  }
+}

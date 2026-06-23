@@ -1,0 +1,25 @@
+{
+  "name": "@realtime-dubbing/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/server.js",
+  "scripts": {
+    "build": "npm run build -w @realtime-dubbing/shared && tsc -p tsconfig.json",
+    "dev": "tsx watch src/server.ts",
+    "smoke:mock": "npm run build && node dist/e2eSmokeCli.js",
+    "start": "node dist/server.js",
+    "test": "vitest run",
+    "typecheck": "npm run build -w @realtime-dubbing/shared && tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@realtime-dubbing/shared": "0.1.0",
+    "nanoid": "^5.1.6",
+    "ws": "^8.18.3",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.21.0"
+  }
+}

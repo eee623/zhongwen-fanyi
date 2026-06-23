@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>中文同传 HTML5 播放器测试页</title>
+    <style>
+      :root {
+        color: #17151f;
+        background: #f4f6f8;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100dvh;
+        margin: 0;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(244, 246, 248, 0.94)),
+          radial-gradient(circle at 12% 10%, rgba(42, 157, 143, 0.16), transparent 28%),
+          radial-gradient(circle at 92% 6%, rgba(31, 78, 121, 0.14), transparent 24%);
+      }
+
+      main {
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.75fr);
+        gap: 20px;
+        width: min(1180px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 28px 0;
+      }
+
+      header {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+        letter-spacing: 0;
+      }
+
+      h1 {
+        font-size: clamp(28px, 4vw, 48px);
+        line-height: 1;
+      }
+
+      .subtitle {
+        max-width: 64ch;
+        margin-top: 10px;
+        color: #5b6472;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        padding: 0 12px;
+        color: #0f4c45;
+        background: #dcf8f0;
+        border: 1px solid #b8eadf;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+
+      .stage,
+      aside,
+      .steps {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #dfe5eb;
+        border-radius: 8px;
+        box-shadow: 0 18px 42px rgba(30, 41, 59, 0.08);
+      }
+
+      .stage {
+        overflow: hidden;
+      }
+
+      video {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        background: #0f172a;
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        padding: 14px;
+        border-top: 1px solid #e4e9ef;
+      }
+
+      button {
+        min-height: 42px;
+        color: #fff;
+        background: #1f4e79;
+        border: 0;
+        border-radius: 8px;
+        font: inherit;
+        font-weight: 850;
+        cursor: pointer;
+      }
+
+      button.secondary {
+        color: #1f3446;
+        background: #eaf0f5;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        color: #6b7280;
+        background: #d7dde4;
+      }
+
+      aside {
+        display: grid;
+        align-content: start;
+        gap: 14px;
+        padding: 16px;
+      }
+
+      aside h2,
+      .steps h2 {
+        font-size: 15px;
+      }
+
+      .meter {
+        height: 10px;
+        overflow: hidden;
+        background: #e6ebf0;
+        border-radius: 999px;
+      }
+
+      .meter span {
+        display: block;
+        width: 0%;
+        height: 100%;
+        background: #2a9d8f;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .stat {
+        min-height: 58px;
+        padding: 10px;
+        background: #f7f9fb;
+        border: 1px solid #e3e8ee;
+        border-radius: 8px;
+      }
+
+      .stat span {
+        display: block;
+        color: #697586;
+        font-size: 12px;
+        font-weight: 760;
+      }
+
+      .stat strong {
+        display: block;
+        margin-top: 4px;
+        color: #151b28;
+        font-size: 18px;
+      }
+
+      .cue {
+        min-height: 96px;
+        padding: 14px;
+        color: #fff;
+        background: #172033;
+        border-radius: 8px;
+      }
+
+      .cue span {
+        display: block;
+        margin-bottom: 8px;
+        color: #9fb3c8;
+        font-size: 12px;
+        font-weight: 780;
+      }
+
+      .cue strong {
+        font-size: 18px;
+        line-height: 1.4;
+      }
+
+      .steps {
+        grid-column: 1 / -1;
+        display: grid;
+        gap: 10px;
+        padding: 16px;
+      }
+
+      .steps ol {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .steps li {
+        min-height: 76px;
+        padding: 12px;
+        color: #334155;
+        background: #f7f9fb;
+        border: 1px solid #e4e9ef;
+        border-radius: 8px;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      code {
+        color: #123b5d;
+        font-family: "SF Mono", Consolas, monospace;
+        font-weight: 760;
+      }
+
+      @media (max-width: 860px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+
+        header {
+          align-items: start;
+          flex-direction: column;
+        }
+
+        .controls,
+        .steps ol {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>HTML5 播放器捕获测试</h1>
+          <p class="subtitle">
+            这个 file:// 页面生成一个带音频的 HTML5 video 流，用来验证 Chrome 扩展的 tabCapture、字幕覆盖、译声播放和全屏覆盖表现。
+          </p>
+        </div>
+        <div class="status-pill" id="status">待准备</div>
+      </header>
+
+      <section class="stage">
+        <video id="testVideo" controls playsinline></video>
+        <div class="controls">
+          <button id="prepareButton" type="button">准备媒体</button>
+          <button id="playButton" type="button" disabled>播放</button>
+          <button id="pauseButton" class="secondary" type="button" disabled>暂停</button>
+          <button id="jumpButton" class="secondary" type="button" disabled>跳转片段</button>
+        </div>
+      </section>
+
+      <aside>
+        <h2>播放状态</h2>
+        <div class="meter" aria-label="progress"><span id="progress"></span></div>
+        <div class="stats">
+          <div class="stat">
+            <span>时间</span>
+            <strong id="timeValue">0.0s</strong>
+          </div>
+          <div class="stat">
+            <span>音量</span>
+            <strong id="volumeValue">80%</strong>
+          </div>
+        </div>
+        <div class="cue">
+          <span>英语测试语音</span>
+          <strong id="cueText">Press prepare, then play.</strong>
+        </div>
+      </aside>
+
+      <section class="steps">
+        <h2>Chrome 扩展手测路径</h2>
+        <ol>
+          <li>在 <code>chrome://extensions</code> 加载 <code>apps/extension/.output/chrome-mv3</code>。</li>
+          <li>允许扩展访问 <code>file://</code> 页面，然后打开本文件。</li>
+          <li>启动 mock API，播放本页 video，在 popup 点击启动并观察中文字幕与译声。</li>
+          <li>点击播放器全屏按钮，确认中文字幕仍覆盖在全屏 video 上。</li>
+        </ol>
+      </section>
+    </main>
+
+    <script>
+      const canvas = document.createElement("canvas");
+      canvas.width = 1280;
+      canvas.height = 720;
+      const context = canvas.getContext("2d");
+      const video = document.getElementById("testVideo");
+      video.volume = 0.8;
+      const status = document.getElementById("status");
+      const progress = document.getElementById("progress");
+      const timeValue = document.getElementById("timeValue");
+      const volumeValue = document.getElementById("volumeValue");
+      const cueText = document.getElementById("cueText");
+      const prepareButton = document.getElementById("prepareButton");
+      const playButton = document.getElementById("playButton");
+      const pauseButton = document.getElementById("pauseButton");
+      const jumpButton = document.getElementById("jumpButton");
+
+      const cues = [
+        "Welcome to the local playback test.",
+        "This tab produces a steady English-like voice signal.",
+        "Start the extension and check the floating Chinese subtitle.",
+        "Now try full screen and make sure the overlay remains visible.",
+        "Pause, resume, and jump to verify session stability."
+      ];
+
+      let audioContext;
+      let oscillator;
+      let gain;
+      let timer = 0;
+      let startedAt = 0;
+      let animationFrame = 0;
+      let mediaStream;
+
+      window.__dubbingManualTest = {
+        ready: false,
+        playing: false,
+        streamKind: "canvas.captureStream + createMediaStreamDestination"
+      };
+
+      prepareButton.addEventListener("click", async () => {
+        if (!mediaStream) {
+          mediaStream = await createSyntheticMediaStream();
+          video.srcObject = mediaStream;
+        }
+        window.__dubbingManualTest.ready = true;
+        status.textContent = "媒体已准备";
+        playButton.disabled = false;
+        pauseButton.disabled = false;
+        jumpButton.disabled = false;
+        prepareButton.disabled = true;
+      });
+
+      playButton.addEventListener("click", async () => {
+        await audioContext.resume();
+        startedAt = performance.now() - timer * 1000;
+        window.__dubbingManualTest.playing = true;
+        status.textContent = "播放中";
+        await video.play();
+        draw();
+      });
+
+      pauseButton.addEventListener("click", () => {
+        video.pause();
+        audioContext.suspend();
+        window.__dubbingManualTest.playing = false;
+        status.textContent = "已暂停";
+        cancelAnimationFrame(animationFrame);
+      });
+
+      jumpButton.addEventListener("click", async () => {
+        timer = (timer + 8) % 24;
+        startedAt = performance.now() - timer * 1000;
+        await audioContext.resume();
+        await video.play();
+        window.__dubbingManualTest.playing = true;
+        status.textContent = "已跳转";
+        draw();
+      });
+
+      async function createSyntheticMediaStream() {
+        audioContext = new AudioContext({ sampleRate: 48000 });
+        const destination = audioContext.createMediaStreamDestination();
+        oscillator = audioContext.createOscillator();
+        gain = audioContext.createGain();
+        oscillator.type = "sawtooth";
+        oscillator.frequency.value = 170;
+        gain.gain.value = 0.08;
+        oscillator.connect(gain);
+        gain.connect(destination);
+        oscillator.start();
+        await audioContext.suspend();
+
+        const canvasStream = canvas.captureStream(30);
+        const stream = new MediaStream([
+          ...canvasStream.getVideoTracks(),
+          ...destination.stream.getAudioTracks()
+        ]);
+        renderFrame(0);
+        return stream;
+      }
+
+      function draw() {
+        timer = (performance.now() - startedAt) / 1000;
+        const cueIndex = Math.floor(timer / 5) % cues.length;
+        const syllable = 160 + Math.sin(timer * 8) * 42 + cueIndex * 12;
+        oscillator.frequency.setTargetAtTime(syllable, audioContext.currentTime, 0.04);
+        gain.gain.setTargetAtTime(0.06 + Math.abs(Math.sin(timer * 2.4)) * 0.05, audioContext.currentTime, 0.03);
+        renderFrame(timer);
+        progress.style.width = `${Math.min(100, ((timer % 25) / 25) * 100)}%`;
+        timeValue.textContent = `${timer.toFixed(1)}s`;
+        volumeValue.textContent = `${Math.round(gain.gain.value * 1000)}%`;
+        cueText.textContent = cues[cueIndex];
+        animationFrame = requestAnimationFrame(draw);
+      }
+
+      function renderFrame(seconds) {
+        const width = canvas.width;
+        const height = canvas.height;
+        const hue = (seconds * 18) % 360;
+        const gradient = context.createLinearGradient(0, 0, width, height);
+        gradient.addColorStop(0, `hsl(${hue}, 58%, 24%)`);
+        gradient.addColorStop(1, `hsl(${(hue + 72) % 360}, 48%, 13%)`);
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, width, height);
+
+        context.fillStyle = "rgba(255, 255, 255, 0.08)";
+        for (let i = 0; i < 8; i += 1) {
+          const x = ((seconds * 40 + i * 190) % (width + 200)) - 100;
+          context.fillRect(x, 0, 38, height);
+        }
+
+        context.fillStyle = "#ffffff";
+        context.font = "700 54px system-ui, sans-serif";
+        context.fillText("Local HTML5 Video Test", 64, 108);
+        context.font = "500 34px system-ui, sans-serif";
+        context.fillText(cues[Math.floor(seconds / 5) % cues.length], 64, 178);
+        context.font = "700 120px system-ui, sans-serif";
+        context.fillText(seconds.toFixed(1), 64, 360);
+      }
+    </script>
+  </body>
+</html>

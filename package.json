@@ -1,0 +1,48 @@
+{
+  "name": "realtime-dubbing-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "dev:api": "npm run dev -w @realtime-dubbing/api",
+    "dev:api:aliyun": "npm run build -w @realtime-dubbing/shared && node --env-file=.env node_modules/.bin/tsx watch apps/api/src/server.ts",
+    "dev:extension": "npm run dev -w @realtime-dubbing/extension",
+    "check:production-config": "node --env-file=.env node_modules/.bin/tsx scripts/check-production-config.ts",
+    "production:env:draft": "tsx scripts/create-production-env-draft.ts",
+    "production:materials": "node --env-file=.env node_modules/.bin/tsx scripts/create-production-launch-materials.ts",
+    "check:latency-evidence": "tsx scripts/check-latency-evidence.ts docs/latency-evidence.jsonl",
+    "check:aliyun": "node --env-file=.env node_modules/.bin/tsx scripts/check-aliyun-connection.ts",
+    "smoke:aliyun": "node --env-file=.env node_modules/.bin/tsx scripts/smoke-aliyun-realtime.ts",
+    "smoke:aliyun:record": "ALIYUN_SMOKE_RECORD_EVIDENCE=1 npm run smoke:aliyun",
+    "smoke:aliyun:matrix": "node --env-file=.env node_modules/.bin/tsx scripts/smoke-aliyun-latency-matrix.ts",
+    "smoke:aliyun:matrix:record": "ALIYUN_MATRIX_RECORD_EVIDENCE=1 npm run smoke:aliyun:matrix",
+    "smoke:aliyun:kpi": "ALIYUN_SMOKE_RUNS=5 ALIYUN_SMOKE_STRICT_KPI=1 npm run smoke:aliyun",
+    "install:chrome-for-testing": "tsx scripts/install-chrome-for-testing.ts",
+    "check:chrome-store": "npm run build && tsx scripts/check-chrome-store-compliance.ts",
+    "build:public-site": "npm run build -w @realtime-dubbing/public-site",
+    "package:chrome-store": "npm run check:chrome-store && npm run zip -w @realtime-dubbing/extension",
+    "manual:chrome": "npm run build && tsx scripts/launch-manual-chrome.ts",
+    "manual:mock": "npm run build && tsx scripts/launch-mock-manual.ts",
+    "manual:aliyun": "npm run build && node --env-file=.env node_modules/.bin/tsx scripts/launch-aliyun-manual.ts",
+    "manual:media-fixtures": "tsx scripts/create-local-media-fixtures.ts",
+    "manual:acceptance-template": "tsx scripts/create-manual-acceptance-report.ts",
+    "manual:acceptance-check": "tsx scripts/check-manual-acceptance-report.ts docs/manual-acceptance-report.md",
+    "smoke:extension:mock": "npm run build && tsx scripts/smoke-extension-mock.ts",
+    "smoke:mock": "npm run smoke:mock -w @realtime-dubbing/api",
+    "public-site:release-urls": "tsx scripts/public-site-release-urls.ts",
+    "release:status": "node --env-file=.env node_modules/.bin/tsx scripts/release-readiness.ts",
+    "release:status:local": "node --env-file=.env node_modules/.bin/tsx scripts/release-readiness.ts --no-external",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run build -w @realtime-dubbing/shared && npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.9"
+  }
+}

@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.output/
+.wxt/
+coverage/
+.tmp/
+.netlify/
+.playwright-cli/
+.env
+.env.*
+!.env.example
+npm-debug.log*
+.DS_Store
+manual-test/generated/
