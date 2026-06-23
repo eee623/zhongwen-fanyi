@@ -38,7 +38,7 @@ export function buildPublicSite(markdown: string, options: PublicSiteOptions = {
   return {
     files: {
       "index.html": renderHomePage(),
-      "privacy/index.html": requireFile(privacy.files, "privacy/index.html"),
+      "privacy/index.html": renderPrivacyPage(markdown, canonicalUrl),
       "pay/index.html": requireFile(checkout.files, "pay/index.html"),
       "assets/public.css": renderStylesheet(),
       "assets/privacy.css": requireFile(privacy.files, "assets/privacy.css"),
@@ -78,20 +78,7 @@ function renderHomePage(): string {
     <link rel="stylesheet" href="/assets/public.css">
   </head>
   <body>
-    <header class="site-header">
-      <a class="brand" href="/" aria-label="中文同传首页">
-        <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-name">中文同传</span>
-        <span class="brand-company">四川笑希软件有限公司</span>
-      </a>
-      <nav class="top-nav" aria-label="主要导航">
-        <a href="#home" aria-current="page">首页</a>
-        <a href="#plans">套餐</a>
-        <a href="/privacy/">隐私政策</a>
-        <a href="#service">联系我们</a>
-      </nav>
-      <a class="nav-button" href="#plans">查看套餐</a>
-    </header>
+    ${renderSiteHeader("home")}
 
     <main>
       <section class="hero" id="home" aria-labelledby="site-title">
@@ -183,17 +170,145 @@ function renderHomePage(): string {
       </section>
     </main>
 
-    <footer class="site-footer">
+    ${renderSiteFooter()}
+  </body>
+</html>
+`;
+}
+
+function renderPrivacyPage(markdown: string, canonicalUrl?: string): string {
+  const title = extractTitle(markdown) ?? "中文同传隐私政策";
+  const canonicalLink = canonicalUrl ? `\n    <link rel="canonical" href="${escapeHtml(canonicalUrl)}">` : "";
+
+  return `<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>${escapeHtml(title)}</title>${canonicalLink}
+    <meta name="description" content="中文同传 Chrome 扩展隐私政策，说明音频、账号、订阅、支付和 Limited Use 数据处理。">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/assets/public.css">
+  </head>
+  <body>
+    ${renderSiteHeader("privacy")}
+
+    <main class="policy-page">
+      <section class="policy-hero" aria-labelledby="policy-title">
+        <p class="eyebrow compact">隐私保护 · 数据最小化 · 用户可控</p>
+        <h1 id="policy-title">${escapeHtml(title)}</h1>
+        <p>我们把隐私政策放在产品网站内部，和订阅、收银台、备案信息保持同一个访问入口。</p>
+      </section>
+      <article class="policy-content">
+        ${renderPolicyBody(markdown)}
+      </article>
+    </main>
+
+    ${renderSiteFooter()}
+  </body>
+</html>
+`;
+}
+
+function renderSiteHeader(active: "home" | "privacy"): string {
+  const homeHref = active === "home" ? "#home" : "/";
+  const plansHref = active === "home" ? "#plans" : "/#plans";
+  const ctaHref = active === "home" ? "#plans" : "/#plans";
+  const homeCurrent = active === "home" ? ' aria-current="page"' : "";
+  const privacyCurrent = active === "privacy" ? ' aria-current="page"' : "";
+
+  return `<header class="site-header">
+      <a class="brand" href="/" aria-label="中文同传首页">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">中文同传</span>
+        <span class="brand-company">四川笑希软件有限公司</span>
+      </a>
+      <nav class="top-nav" aria-label="主要导航">
+        <a href="${homeHref}"${homeCurrent}>首页</a>
+        <a href="${plansHref}">套餐</a>
+        <a href="/privacy/"${privacyCurrent}>隐私政策</a>
+        <a href="mailto:eeelj65@gmail.com">联系我们</a>
+      </nav>
+      <a class="nav-button" href="${ctaHref}">查看套餐</a>
+    </header>`;
+}
+
+function renderSiteFooter(): string {
+  return `<footer class="site-footer">
       <p>© 2026 四川笑希软件有限公司　保留所有权利</p>
       <nav aria-label="页脚导航">
         <a href="/privacy/">隐私政策</a>
         <a href="/pay/">用户协议</a>
+        <a href="mailto:eeelj65@gmail.com">eeelj65@gmail.com</a>
         <a href="https://beian.miit.gov.cn/" rel="noopener">蜀ICP备2026033716号</a>
       </nav>
-    </footer>
-  </body>
-</html>
-`;
+    </footer>`;
+}
+
+function extractTitle(markdown: string): string | undefined {
+  const heading = markdown
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find((line) => line.startsWith("# "));
+  return heading ? heading.replace(/^#\s+/, "").trim() : undefined;
+}
+
+function renderPolicyBody(markdown: string): string {
+  const lines = markdown.split(/\r?\n/);
+  const html: string[] = [];
+  let paragraph: string[] = [];
+  let listItems: string[] = [];
+
+  const flushParagraph = () => {
+    if (paragraph.length === 0) {
+      return;
+    }
+    html.push(`<p>${escapeHtml(paragraph.join(" "))}</p>`);
+    paragraph = [];
+  };
+
+  const flushList = () => {
+    if (listItems.length === 0) {
+      return;
+    }
+    html.push(`<ul>${listItems.map((item) => `<li>${item}</li>`).join("")}</ul>`);
+    listItems = [];
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+
+    if (line.startsWith("# ")) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+
+    if (line.startsWith("## ")) {
+      flushParagraph();
+      flushList();
+      html.push(`<h2>${escapeHtml(line.replace(/^##\s+/, ""))}</h2>`);
+      continue;
+    }
+
+    if (line.startsWith("- ")) {
+      flushParagraph();
+      listItems.push(escapeHtml(line.replace(/^-\s+/, "")));
+      continue;
+    }
+
+    flushList();
+    paragraph.push(line);
+  }
+
+  flushParagraph();
+  flushList();
+  return html.join("\n        ");
 }
 
 function renderStylesheet(): string {
@@ -242,6 +357,7 @@ a {
 .plans,
 .checkout-section,
 .service,
+.policy-page,
 .site-footer {
   width: min(1530px, calc(100% - 48px));
   margin: 0 auto;
@@ -656,6 +772,64 @@ h3 {
   font-weight: 950;
 }
 
+.policy-page {
+  max-width: 960px;
+  padding: 70px 0 78px;
+}
+
+.policy-hero {
+  padding: 32px 0 34px;
+}
+
+.policy-hero h1 {
+  max-width: 760px;
+  font-size: 48px;
+}
+
+.policy-hero p:not(.eyebrow) {
+  max-width: 720px;
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.policy-content {
+  padding-top: 32px;
+  border-top: 1px solid #dedcf4;
+}
+
+.policy-content h2 {
+  margin: 42px 0 14px;
+  font-size: 24px;
+}
+
+.policy-content h2:first-child {
+  margin-top: 0;
+}
+
+.policy-content p,
+.policy-content li {
+  color: #30384c;
+  font-size: 16px;
+  line-height: 1.9;
+}
+
+.policy-content p + p {
+  margin-top: 16px;
+}
+
+.policy-content ul {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 0;
+  padding-left: 20px;
+}
+
+.policy-content li::marker {
+  color: var(--accent-strong);
+}
+
 .site-footer {
   display: flex;
   min-height: 86px;
@@ -717,6 +891,7 @@ h3 {
   .plans,
   .checkout-section,
   .service,
+  .policy-page,
   .site-footer {
     width: min(100% - 28px, 1530px);
   }
@@ -763,6 +938,14 @@ h3 {
 
   .lead {
     font-size: 18px;
+  }
+
+  .policy-page {
+    padding: 38px 0 56px;
+  }
+
+  .policy-hero h1 {
+    font-size: 34px;
   }
 
   .hero-actions {
@@ -827,4 +1010,13 @@ function renderHeaders(): string {
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Content-Security-Policy: default-src 'self'; connect-src https:; base-uri 'none'; frame-ancestors 'none'; form-action 'none'
 `;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }

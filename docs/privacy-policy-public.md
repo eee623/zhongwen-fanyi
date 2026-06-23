@@ -29,6 +29,6 @@
 
 音频捕获只能由用户主动点击启动。用户可以随时点击停止，停止后扩展应立即断开音频流和后端连接。对于本地文件页面，用户还需要在 Chrome 扩展详情页主动允许 `file://` 页面访问。
 
-## 联系方式与正式发布
+## 联系方式
 
-这份文件是提交 Chrome Web Store 前的公开隐私政策正文源稿。正式上架前，必须把它发布到一个公开、可访问、HTTPS 的隐私政策 URL，并在 `store-assets/chrome-web-store/submission.json` 或环境变量 `CHROME_STORE_PRIVACY_POLICY_URL` 中填写该 URL。
+eeelj65@gmail.com

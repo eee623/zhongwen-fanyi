@@ -10,7 +10,11 @@ const policyMarkdown = [
   "",
   "## Limited Use",
   "",
-  "用户数据只用于实时翻译、中文字幕、中文配音、订阅、支付、额度和故障诊断。"
+  "用户数据只用于实时翻译、中文字幕、中文配音、订阅、支付、额度和故障诊断。",
+  "",
+  "## 联系方式",
+  "",
+  "eeelj65@gmail.com"
 ].join("\n");
 
 describe("public site", () => {
@@ -26,6 +30,13 @@ describe("public site", () => {
     expect(site.files["privacy/index.html"]).toContain('rel="canonical" href="https://realtime-dubbing.example/privacy/"');
     expect(site.files["privacy/index.html"]).toContain("不保存原始音频");
     expect(site.files["privacy/index.html"]).toContain("Limited Use");
+    expect(site.files["privacy/index.html"]).toContain('href="/assets/public.css"');
+    expect(site.files["privacy/index.html"]).toContain('class="site-header"');
+    expect(site.files["privacy/index.html"]).toContain("蜀ICP备2026033716号");
+    expect(site.files["privacy/index.html"]).toContain("eeelj65@gmail.com");
+    expect(site.files["privacy/index.html"]).not.toContain("联系方式与正式发布");
+    expect(site.files["privacy/index.html"]).not.toContain("正式上架前");
+    expect(site.files["privacy/index.html"]).not.toContain('href="/assets/privacy.css"');
     expect(site.files["pay/index.html"]).toContain("中文同传收银台");
     expect(site.files["assets/privacy.css"]).toContain("font-family");
     expect(site.files["assets/checkout.css"]).toContain("prefers-color-scheme");
