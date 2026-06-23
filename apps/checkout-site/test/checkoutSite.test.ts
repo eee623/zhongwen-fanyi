@@ -16,13 +16,24 @@ describe("checkout site", () => {
     expect(site.files["index.html"]).toContain('href="/assets/checkout.css"');
     expect(site.files["index.html"]).toContain('src="/assets/checkout.js"');
     expect(site.files["index.html"]).toContain('id="status-copy"');
+    expect(site.files["index.html"]).toContain('class="checkout-header"');
+    expect(site.files["index.html"]).toContain('id="provider-tabs"');
+    expect(site.files["index.html"]).toContain('id="payment-link"');
+    expect(site.files["index.html"]).toContain('id="qr-code"');
+    expect(site.files["index.html"]).toContain('id="polling-state"');
     expect(site.files["index.html"]).not.toContain("<style>");
     expect(site.files["index.html"]).not.toContain("<script>");
     expect(site.files["index.html"]).not.toContain(String.fromCharCode(8212));
     expect(site.files["assets/checkout.css"]).toContain("prefers-color-scheme");
+    expect(site.files["assets/checkout.css"]).toContain(".payment-methods");
+    expect(site.files["assets/checkout.css"]).toContain(".qr-frame");
     expect(site.files["assets/checkout.js"]).toContain("fetch(statusUrl");
+    expect(site.files["assets/checkout.js"]).toContain("paymentUrl");
+    expect(site.files["assets/checkout.js"]).toContain("qrCodeUrl");
+    expect(site.files["assets/checkout.js"]).toContain("setInterval");
     expect(site.files["_headers"]).toContain("Content-Security-Policy: default-src 'self'");
     expect(site.files["_headers"]).toContain("connect-src https:");
+    expect(site.files["_headers"]).toContain("img-src 'self' https: data:");
     expect(site.files["robots.txt"]).toContain("Disallow: /");
   });
 
@@ -58,8 +69,21 @@ describe("checkout site", () => {
   });
 
   it("drops non-HTTPS status URLs from checkout params", () => {
-    const order = checkoutOrderFromSearch("?orderId=ord_1&statusUrl=http%3A%2F%2Fapi.example.com%2Fstatus");
+    const order = checkoutOrderFromSearch(
+      "?orderId=ord_1&statusUrl=http%3A%2F%2Fapi.example.com%2Fstatus&paymentUrl=http%3A%2F%2Fpay.example.com&qrCodeUrl=http%3A%2F%2Fpay.example.com%2Fqr.png"
+    );
 
     expect(order.statusUrl).toBeUndefined();
+    expect(order.paymentUrl).toBeUndefined();
+    expect(order.qrCodeUrl).toBeUndefined();
+  });
+
+  it("accepts HTTPS provider payment and QR code URLs for payment handoff", () => {
+    const order = checkoutOrderFromSearch(
+      "?orderId=ord_1&provider=wechat&paymentUrl=https%3A%2F%2Fpay.example.com%2Fwechat%2Ford_1&qrCodeUrl=https%3A%2F%2Fpay.example.com%2Fwechat%2Ford_1.png"
+    );
+
+    expect(order.paymentUrl).toBe("https://pay.example.com/wechat/ord_1");
+    expect(order.qrCodeUrl).toBe("https://pay.example.com/wechat/ord_1.png");
   });
 });

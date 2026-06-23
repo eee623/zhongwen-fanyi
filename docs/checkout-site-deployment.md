@@ -1,8 +1,8 @@
 # 收银台部署
 
-`apps/checkout-site` 是第一版官网订阅收银台的静态站点。它承接 API 返回的 `checkout.checkoutUrl`，从 URL 查询参数读取 `orderId`、`provider` 和 `packageId`，展示订单号、支付方式、套餐和金额。
+`apps/checkout-site` 是官网订阅收银台的静态站点。它承接 API 返回的 `checkout.checkoutUrl`，从 URL 查询参数读取 `orderId`、`provider`、`packageId`、`statusUrl`、`paymentUrl` 和 `qrCodeUrl`，展示订单号、支付方式、套餐、金额、支付入口、二维码和订单状态。
 
-当前页面不直接调用支付宝或微信支付 SDK。真实预下单和二维码/跳转按钮接入后，应继续复用同一个 `/pay` 路径和订单查询参数。
+当前页面不在前端处理支付签名、私钥、预下单或回调验签。真实支付宝/微信支付接入应在服务端完成预下单并生成安全的 HTTPS 支付入口或二维码图片，再把结果传给同一个 `/pay` 页面。
 
 ## 构建
 
@@ -53,13 +53,20 @@ PAYMENT_CHECKOUT_BASE_URL=https://your-domain.example/pay
 {
   "checkout": {
     "mode": "provider_redirect_pending",
-    "checkoutUrl": "https://your-domain.example/pay?orderId=...&provider=alipay&packageId=pro_20m_cny_39&statusUrl=...",
-    "statusUrl": "https://api.your-domain.example/v1/payment-orders/ord_.../status?token=..."
+    "checkoutUrl": "https://your-domain.example/pay?orderId=...&provider=alipay&packageId=pro_20m_cny_39&statusUrl=...&paymentUrl=...",
+    "statusUrl": "https://api.your-domain.example/v1/payment-orders/ord_.../status?token=...",
+    "paymentUrl": "https://api.your-domain.example/v1/payment-orders/ord_.../pay"
   }
 }
 ```
 
 扩展只会自动打开 HTTPS checkout URL；非 HTTPS 或非法 URL 会被忽略，只显示订单号和金额。
+
+收银台会额外识别这些 HTTPS 参数：
+
+- `paymentUrl`：支付宝电脑网站支付跳转入口，或微信 H5 支付入口。推荐指向自有后端的支付启动端点，由后端完成支付宝表单输出或微信支付跳转。
+- `qrCodeUrl`：微信 Native 支付二维码图片 URL。推荐由后端把微信返回的 `code_url` 转成 PNG/SVG 图片后提供给前端。
+- `statusUrl`：签名只读订单状态接口。若状态响应体后续返回 `paymentUrl` 或 `qrCodeUrl`，页面会用最新值刷新支付操作区。
 
 若需要让收银台查询订单状态，还要配置：
 
