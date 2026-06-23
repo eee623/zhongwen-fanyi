@@ -1,45 +1,49 @@
 # 公开站点上线部署
 
-`apps/public-site` 是生产官网静态站点。它包含：
+仓库根目录已经提供一套纯 HTML 官网，不需要 Node.js，不需要安装依赖，不需要构建。直接上传这些文件即可打开：
+
+```text
+index.html
+privacy/index.html
+pay/index.html
+assets/site.css
+store-assets/public-site/*.png
+robots.txt
+```
+
+页面包含：
 
 - `/`：产品首页、套餐入口和备案信息。
 - `/privacy/`：公开隐私政策，供 Chrome Web Store 填写。
 - `/pay/`：订阅收银台，承接 API 返回的 `checkout.checkoutUrl`。
 
-构建产物会自动包含本地 CSS/JS、产品截图、`robots.txt`、`sitemap.xml`、安全响应头和备案号 `蜀ICP备2026033716号`。
+这套根目录页面不包含 JavaScript。支付页使用 HTML + CSS 做支付宝/微信切换，适合只要求“网站能打开、按钮能点击”的部署场景。
 
-## 从 GitHub 拉取后构建
+## 从 GitHub 下载后部署
 
-```bash
-git clone https://github.com/eee623/zhongwen-fanyi.git
-cd zhongwen-fanyi
-npm ci
-PUBLIC_SITE_BASE_URL=https://your-real-domain.com npm run build:public-site
-```
+1. 打开 `https://github.com/eee623/zhongwen-fanyi`。
+2. 点击 `Code`，下载 ZIP。
+3. 解压。
+4. 把解压后的整个文件夹上传到服务器网站根目录。
+5. 访问域名。
 
-输出目录：
-
-```text
-apps/public-site/dist
-```
-
-正式上线时必须把 `PUBLIC_SITE_BASE_URL` 换成真实 HTTPS 产品域名。这个值会写入首页 canonical、隐私政策 canonical、`robots.txt` 的 Sitemap 行和 `sitemap.xml`。
-
-## Netlify 从 GitHub 部署
-
-仓库根目录已经提供 `netlify.toml`，导入 GitHub 仓库后使用默认根目录即可：
+服务器上不要执行：
 
 ```text
-Build command: npm run build:public-site
-Publish directory: apps/public-site/dist
-Node version: 22
+npm install
+npm run build
 ```
 
-在 Netlify 环境变量中设置：
+## Netlify 从 GitHub 直接部署
+
+仓库根目录已经提供无构建 `netlify.toml`：
 
 ```text
-PUBLIC_SITE_BASE_URL=https://your-real-domain.com
+Build command: 留空
+Publish directory: .
 ```
+
+不要设置 Node 版本，不要添加构建命令。
 
 部署后检查：
 
@@ -47,8 +51,11 @@ PUBLIC_SITE_BASE_URL=https://your-real-domain.com
 https://your-real-domain.com/
 https://your-real-domain.com/privacy/
 https://your-real-domain.com/pay/
-https://your-real-domain.com/sitemap.xml
 ```
+
+## Node 构建版说明
+
+`apps/public-site` 仍保留原来的 Node.js 生成器，供后续需要自动生成 sitemap、canonical、支付参数等高级能力时使用。只部署展示官网时，可以忽略它。
 
 ## 生产 API 必填配置
 

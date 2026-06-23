@@ -1,5 +1,38 @@
 # 中文同传 Dubbing
 
+## 最简单部署方式：纯 HTML，不需要 Node.js
+
+如果你只是要官网能打开，服务器上什么都不用装。仓库根目录已经放好了纯静态文件：
+
+```text
+index.html
+privacy/index.html
+pay/index.html
+assets/site.css
+store-assets/public-site/*.png
+```
+
+部署方法：
+
+1. 打开仓库：[https://github.com/eee623/zhongwen-fanyi](https://github.com/eee623/zhongwen-fanyi)
+2. 点 `Code`，下载 ZIP。
+3. 解压。
+4. 把解压后的整个文件夹上传到服务器的网站根目录，例如宝塔的 `wwwroot/你的域名/`。
+5. 访问你的域名即可打开。
+
+不要在服务器上运行 `npm install`，不要运行 `npm run build`。这套静态页面不需要任何依赖。
+
+如果用 Netlify，直接导入 GitHub 仓库即可。当前 `netlify.toml` 是无构建配置：
+
+```text
+Publish directory: .
+Build command: 留空
+```
+
+根目录静态页面只是官网展示和收银台外观。真实同传服务、真实支付宝/微信扣款、额度入账仍需要后端 API 和商户密钥；如果暂时只要“网站能打开”，不用管后端。
+
+## 工程源码说明
+
 Chrome 浏览器实时同传插件 MVP：捕获当前标签页音频，将英语实时翻译成中文字幕和中文配音，并通过阿里百炼 `qwen3.5-livetranslate-flash-realtime` 开启动态声音复刻。
 
 ## 当前能力
