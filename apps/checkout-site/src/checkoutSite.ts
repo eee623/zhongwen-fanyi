@@ -12,6 +12,7 @@ export interface CheckoutOrder {
   paymentUrl?: string;
   qrCodeUrl?: string;
   alipayPaymentUrl?: string;
+  alipayQrCodeUrl?: string;
   wechatPaymentUrl?: string;
   wechatQrCodeUrl?: string;
 }
@@ -65,6 +66,7 @@ export function checkoutOrderFromSearch(search: string): CheckoutOrder {
     paymentUrl: readHttpsUrl(params.get("paymentUrl")),
     qrCodeUrl: readHttpsUrl(params.get("qrCodeUrl")),
     alipayPaymentUrl: readHttpsUrl(params.get("alipayPaymentUrl")),
+    alipayQrCodeUrl: readHttpsUrl(params.get("alipayQrCodeUrl")),
     wechatPaymentUrl: readHttpsUrl(params.get("wechatPaymentUrl")),
     wechatQrCodeUrl: readHttpsUrl(params.get("wechatQrCodeUrl"))
   };
@@ -176,13 +178,17 @@ function renderCheckoutPage(): string {
           </div>
           <div class="pay-action">
             <p class="polling-state" id="polling-state">等待订单状态</p>
-            <div class="qr-frame" id="qr-frame" hidden>
-              <img id="qr-code" alt="微信支付二维码" hidden>
-              <div class="qr-placeholder" id="qr-placeholder" aria-hidden="true">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
+            <div class="qr-frame" id="qr-frame">
+              <img id="qr-code" alt="支付二维码" hidden>
+              <div class="qr-placeholder" id="qr-placeholder">
+                <div class="qr-blocks" aria-hidden="true">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <p id="qr-placeholder-title">支付宝二维码准备中</p>
+                <small>可点击下方按钮继续支付</small>
               </div>
             </div>
             <a class="payment-link disabled" id="payment-link" href="#" aria-disabled="true">立即支付</a>
@@ -551,21 +557,41 @@ dd {
 
 .qr-placeholder {
   display: grid;
+  gap: 12px;
+  place-items: center;
+  opacity: 0.72;
+  text-align: center;
+}
+
+.qr-blocks {
+  display: grid;
   grid-template-columns: 42px 42px;
   grid-template-rows: 42px 42px;
   gap: 14px;
-  opacity: 0.72;
 }
 
-.qr-placeholder span {
+.qr-blocks span {
   display: block;
   background: #ddd7ff;
   border-radius: 7px;
 }
 
-.qr-placeholder span:nth-child(2),
-.qr-placeholder span:nth-child(3) {
+.qr-blocks span:nth-child(2),
+.qr-blocks span:nth-child(3) {
   background: #bfb3ff;
+}
+
+.qr-placeholder p {
+  margin: 0;
+  color: #293249;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.qr-placeholder small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
 }
 
 .payment-link,
@@ -790,6 +816,7 @@ function render() {
   const paymentUrl = safeHttpsUrl(params.get("paymentUrl"));
   const qrCodeUrl = safeHttpsUrl(params.get("qrCodeUrl"));
   const alipayPaymentUrl = safeHttpsUrl(params.get("alipayPaymentUrl"));
+  const alipayQrCodeUrl = safeHttpsUrl(params.get("alipayQrCodeUrl"));
   const wechatPaymentUrl = safeHttpsUrl(params.get("wechatPaymentUrl"));
   const wechatQrCodeUrl = safeHttpsUrl(params.get("wechatQrCodeUrl"));
   currentOrder = {
@@ -802,6 +829,7 @@ function render() {
     paymentUrl,
     qrCodeUrl,
     alipayPaymentUrl,
+    alipayQrCodeUrl,
     wechatPaymentUrl,
     wechatQrCodeUrl,
     status: "pending"
@@ -839,6 +867,7 @@ function statusPayloadUrl(payload) {
     paymentUrl: safeHttpsUrl(payload?.paymentUrl) || safeHttpsUrl(checkout.paymentUrl),
     qrCodeUrl: safeHttpsUrl(payload?.qrCodeUrl) || safeHttpsUrl(checkout.qrCodeUrl),
     alipayPaymentUrl: safeHttpsUrl(payload?.alipayPaymentUrl) || safeHttpsUrl(checkout.alipayPaymentUrl),
+    alipayQrCodeUrl: safeHttpsUrl(payload?.alipayQrCodeUrl) || safeHttpsUrl(checkout.alipayQrCodeUrl),
     wechatPaymentUrl: safeHttpsUrl(payload?.wechatPaymentUrl) || safeHttpsUrl(checkout.wechatPaymentUrl),
     wechatQrCodeUrl: safeHttpsUrl(payload?.wechatQrCodeUrl) || safeHttpsUrl(checkout.wechatQrCodeUrl),
     expiresAt: typeof payload?.expiresAt === "number" ? payload.expiresAt : undefined
@@ -856,6 +885,7 @@ function mergeStatus(order, payload) {
     paymentUrl: urls.paymentUrl ?? order.paymentUrl,
     qrCodeUrl: urls.qrCodeUrl ?? order.qrCodeUrl,
     alipayPaymentUrl: urls.alipayPaymentUrl ?? order.alipayPaymentUrl,
+    alipayQrCodeUrl: urls.alipayQrCodeUrl ?? order.alipayQrCodeUrl,
     wechatPaymentUrl: urls.wechatPaymentUrl ?? order.wechatPaymentUrl,
     wechatQrCodeUrl: urls.wechatQrCodeUrl ?? order.wechatQrCodeUrl
   };
@@ -930,23 +960,27 @@ function renderPaymentAction(order) {
   const qrFrame = document.getElementById("qr-frame");
   const qrCode = document.getElementById("qr-code");
   const qrPlaceholder = document.getElementById("qr-placeholder");
+  const qrPlaceholderTitle = document.getElementById("qr-placeholder-title");
   const actionUrl = paymentUrlForProvider(order);
   const qrUrl = qrCodeUrlForProvider(order);
   if (qrFrame) {
-    qrFrame.hidden = order.provider !== "wechat";
+    qrFrame.hidden = false;
   }
   if (qrCode) {
-    if (order.provider === "wechat" && qrUrl) {
+    if (qrUrl) {
       qrCode.src = qrUrl;
       qrCode.hidden = false;
-      qrCode.alt = "微信支付二维码";
+      qrCode.alt = providerLabel(order.provider) + "二维码";
     } else {
       qrCode.removeAttribute("src");
       qrCode.hidden = true;
     }
   }
   if (qrPlaceholder) {
-    qrPlaceholder.hidden = order.provider === "wechat" && Boolean(qrUrl);
+    qrPlaceholder.hidden = Boolean(qrUrl);
+  }
+  if (qrPlaceholderTitle) {
+    qrPlaceholderTitle.textContent = providerLabel(order.provider) + "二维码准备中";
   }
   if (!paymentLink) {
     return;
@@ -981,7 +1015,7 @@ function qrCodeUrlForProvider(order) {
   if (order.provider === "wechat") {
     return order.wechatQrCodeUrl || order.qrCodeUrl;
   }
-  return undefined;
+  return order.alipayQrCodeUrl;
 }
 
 function setProviderFromUser(provider) {

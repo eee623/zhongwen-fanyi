@@ -65,6 +65,7 @@ PAYMENT_CHECKOUT_BASE_URL=https://your-domain.example/pay
 收银台会额外识别这些 HTTPS 参数：
 
 - `alipayPaymentUrl`：支付宝电脑网站支付跳转入口。
+- `alipayQrCodeUrl`：支付宝二维码图片 URL。若暂未返回，页面会保留二维码展示区域并显示准备中状态。
 - `wechatPaymentUrl`：微信 H5 或后端托管的微信支付入口。
 - `wechatQrCodeUrl`：微信 Native 支付二维码图片 URL。
 - `paymentUrl`：兼容旧版本的通用支付入口。若没有按渠道返回地址，页面会回退使用它。

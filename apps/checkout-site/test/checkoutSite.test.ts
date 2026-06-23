@@ -21,6 +21,8 @@ describe("checkout site", () => {
     expect(site.files["index.html"]).toContain('id="payment-link"');
     expect(site.files["index.html"]).toContain('id="qr-code"');
     expect(site.files["index.html"]).toContain('id="polling-state"');
+    expect(site.files["index.html"]).toContain('id="qr-frame"');
+    expect(site.files["index.html"]).not.toContain('id="qr-frame" hidden');
     expect(site.files["index.html"]).toContain('class="provider-logo alipay-logo"');
     expect(site.files["index.html"]).toContain('class="provider-logo wechat-logo"');
     expect(site.files["index.html"]).not.toContain("真实接入边界");
@@ -41,6 +43,7 @@ describe("checkout site", () => {
     expect(site.files["assets/checkout.js"]).toContain("setProviderFromUser");
     expect(site.files["assets/checkout.js"]).toContain("paymentUrl");
     expect(site.files["assets/checkout.js"]).toContain("qrCodeUrl");
+    expect(site.files["assets/checkout.js"]).toContain("alipayQrCodeUrl");
     expect(site.files["assets/checkout.js"]).toContain("setInterval");
     expect(site.files["_headers"]).toContain("Content-Security-Policy: default-src 'self'");
     expect(site.files["_headers"]).toContain("connect-src https:");
@@ -81,22 +84,24 @@ describe("checkout site", () => {
 
   it("drops non-HTTPS status URLs from checkout params", () => {
     const order = checkoutOrderFromSearch(
-      "?orderId=ord_1&statusUrl=http%3A%2F%2Fapi.example.com%2Fstatus&paymentUrl=http%3A%2F%2Fpay.example.com&qrCodeUrl=http%3A%2F%2Fpay.example.com%2Fqr.png"
+      "?orderId=ord_1&statusUrl=http%3A%2F%2Fapi.example.com%2Fstatus&paymentUrl=http%3A%2F%2Fpay.example.com&qrCodeUrl=http%3A%2F%2Fpay.example.com%2Fqr.png&alipayQrCodeUrl=http%3A%2F%2Fpay.example.com%2Falipay-qr.png"
     );
 
     expect(order.statusUrl).toBeUndefined();
     expect(order.paymentUrl).toBeUndefined();
     expect(order.qrCodeUrl).toBeUndefined();
+    expect(order.alipayQrCodeUrl).toBeUndefined();
   });
 
   it("accepts HTTPS provider payment and QR code URLs for payment handoff", () => {
     const order = checkoutOrderFromSearch(
-      "?orderId=ord_1&provider=wechat&paymentUrl=https%3A%2F%2Fpay.example.com%2Ffallback%2Ford_1&qrCodeUrl=https%3A%2F%2Fpay.example.com%2Ffallback%2Ford_1.png&alipayPaymentUrl=https%3A%2F%2Fpay.example.com%2Falipay%2Ford_1&wechatPaymentUrl=https%3A%2F%2Fpay.example.com%2Fwechat%2Ford_1&wechatQrCodeUrl=https%3A%2F%2Fpay.example.com%2Fwechat%2Ford_1.png"
+      "?orderId=ord_1&provider=wechat&paymentUrl=https%3A%2F%2Fpay.example.com%2Ffallback%2Ford_1&qrCodeUrl=https%3A%2F%2Fpay.example.com%2Ffallback%2Ford_1.png&alipayPaymentUrl=https%3A%2F%2Fpay.example.com%2Falipay%2Ford_1&alipayQrCodeUrl=https%3A%2F%2Fpay.example.com%2Falipay%2Ford_1.png&wechatPaymentUrl=https%3A%2F%2Fpay.example.com%2Fwechat%2Ford_1&wechatQrCodeUrl=https%3A%2F%2Fpay.example.com%2Fwechat%2Ford_1.png"
     );
 
     expect(order.paymentUrl).toBe("https://pay.example.com/fallback/ord_1");
     expect(order.qrCodeUrl).toBe("https://pay.example.com/fallback/ord_1.png");
     expect(order.alipayPaymentUrl).toBe("https://pay.example.com/alipay/ord_1");
+    expect(order.alipayQrCodeUrl).toBe("https://pay.example.com/alipay/ord_1.png");
     expect(order.wechatPaymentUrl).toBe("https://pay.example.com/wechat/ord_1");
     expect(order.wechatQrCodeUrl).toBe("https://pay.example.com/wechat/ord_1.png");
   });
