@@ -31,21 +31,24 @@ const productAssets: PublicSiteAsset[] = [
 ];
 
 export function buildPublicSite(markdown: string, options: PublicSiteOptions = {}): PublicSite {
-  const canonicalUrl = options.publicBaseUrl ? `${trimTrailingSlash(options.publicBaseUrl)}/privacy/` : undefined;
-  const privacy = buildPrivacyPolicySite(markdown, { canonicalUrl });
+  const baseUrl = options.publicBaseUrl ? trimTrailingSlash(options.publicBaseUrl) : undefined;
+  const homeCanonicalUrl = baseUrl ? `${baseUrl}/` : undefined;
+  const privacyCanonicalUrl = baseUrl ? `${baseUrl}/privacy/` : undefined;
+  const privacy = buildPrivacyPolicySite(markdown, { canonicalUrl: privacyCanonicalUrl });
   const checkout = buildCheckoutSite();
 
   return {
     files: {
-      "index.html": renderHomePage(),
-      "privacy/index.html": renderPrivacyPage(markdown, canonicalUrl),
+      "index.html": renderHomePage(homeCanonicalUrl),
+      "privacy/index.html": renderPrivacyPage(markdown, privacyCanonicalUrl),
       "pay/index.html": requireFile(checkout.files, "pay/index.html"),
       "assets/public.css": renderStylesheet(),
       "assets/privacy.css": requireFile(privacy.files, "assets/privacy.css"),
       "assets/checkout.css": requireFile(checkout.files, "assets/checkout.css"),
       "assets/checkout.js": requireFile(checkout.files, "assets/checkout.js"),
       "favicon.svg": renderFavicon(),
-      "robots.txt": renderRobots(),
+      "robots.txt": renderRobots(baseUrl),
+      ...(baseUrl ? { "sitemap.xml": renderSitemap(baseUrl) } : {}),
       "_headers": renderHeaders()
     },
     assets: productAssets
@@ -64,16 +67,21 @@ function trimTrailingSlash(value: string): string {
   return value.trim().replace(/\/+$/, "");
 }
 
-function renderHomePage(): string {
+function renderHomePage(canonicalUrl?: string): string {
   const [homeImage, planImage, checkoutImage] = productAssets;
+  const canonicalLink = canonicalUrl ? `\n    <link rel="canonical" href="${escapeHtml(canonicalUrl)}">` : "";
 
   return `<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>中文同传</title>
+    <title>中文同传</title>${canonicalLink}
     <meta name="description" content="中文同传 Chrome 扩展，支持网页视频和 Chrome 可播放本地视频的英文转中文字幕与中文配音。">
+    <meta name="theme-color" content="#6847f5">
+    <meta property="og:title" content="中文同传">
+    <meta property="og:description" content="浏览器实时中文同传插件，支持英文视频转中文字幕和中文配音。">
+    <meta property="og:type" content="website">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/assets/public.css">
   </head>
@@ -990,8 +998,22 @@ h3 {
 `;
 }
 
-function renderRobots(): string {
-  return "User-agent: *\nAllow: /privacy/\nDisallow: /pay/\n";
+function renderRobots(baseUrl?: string): string {
+  const sitemap = baseUrl ? `Sitemap: ${baseUrl}/sitemap.xml\n` : "";
+  return `User-agent: *\nAllow: /\nDisallow: /pay/\n${sitemap}`;
+}
+
+function renderSitemap(baseUrl: string): string {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${escapeHtml(baseUrl)}/</loc>
+  </url>
+  <url>
+    <loc>${escapeHtml(baseUrl)}/privacy/</loc>
+  </url>
+</urlset>
+`;
 }
 
 function renderFavicon(): string {
@@ -1005,10 +1027,11 @@ function renderFavicon(): string {
 function renderHeaders(): string {
   return `/*
   X-Content-Type-Options: nosniff
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
   Referrer-Policy: no-referrer
   X-Frame-Options: DENY
   Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Content-Security-Policy: default-src 'self'; connect-src https:; base-uri 'none'; frame-ancestors 'none'; form-action 'none'
+  Content-Security-Policy: default-src 'self'; connect-src https:; img-src 'self' https: data:; base-uri 'none'; frame-ancestors 'none'; form-action 'none'
 `;
 }
 

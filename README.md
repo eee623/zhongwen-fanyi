@@ -204,21 +204,21 @@ npm run install:chrome-for-testing
 
 Chrome 上架是硬性发布门，详见 `docs/chrome-web-store-release-gate.md` 和 `docs/chrome-web-store-assets.md`。任何 Chrome Web Store 合规项未满足，都不得提交审核或发布生产版本。
 `npm run package:chrome-store` 会先执行合规门，再生成 Chrome Web Store 上传 zip，输出位置在 `apps/extension/.output/`。
-当前 `store-assets/chrome-web-store/submission.json` 已填入可公开访问的 Netlify 审核别名隐私政策 URL。正式商业发布前推荐改成自有产品域名，重新构建并部署 `apps/public-site`，把 `/privacy` 和 `/pay` 放到同一个公开 HTTPS 产品域名下，再通过 `CHROME_STORE_PRIVACY_POLICY_URL` 覆盖真实隐私政策 URL。
+正式商业发布前使用自有产品域名构建并部署 `apps/public-site`，把 `/privacy` 和 `/pay` 放到同一个公开 HTTPS 产品域名下，再通过 `CHROME_STORE_PRIVACY_POLICY_URL` 覆盖真实隐私政策 URL。
 
 统一公开站点：
 
 ```bash
-PUBLIC_SITE_BASE_URL=https://chrome-store--realtime-dubbing-cn.netlify.app npm run build:public-site
-npm run public-site:release-urls -- https://chrome-store--realtime-dubbing-cn.netlify.app
+PUBLIC_SITE_BASE_URL=https://your-real-domain.com npm run build:public-site
+npm run public-site:release-urls -- https://your-real-domain.com
 # 输出目录：apps/public-site/dist
 ```
 
 部署后使用：
 
 ```text
-CHROME_STORE_PRIVACY_POLICY_URL=https://chrome-store--realtime-dubbing-cn.netlify.app/privacy/
-PAYMENT_CHECKOUT_BASE_URL=https://chrome-store--realtime-dubbing-cn.netlify.app/pay/
+CHROME_STORE_PRIVACY_POLICY_URL=https://your-real-domain.com/privacy/
+PAYMENT_CHECKOUT_BASE_URL=https://your-real-domain.com/pay/
 ```
 
 也可以直接从 Chrome Store 提交元数据生成生产环境草案：
@@ -230,7 +230,7 @@ npm run production:env:draft
 如果 API 已有公开域名，可把订单状态域名作为第二个参数：
 
 ```bash
-npm run production:env:draft -- https://chrome-store--realtime-dubbing-cn.netlify.app/privacy/ https://api.your-domain.example
+npm run production:env:draft -- https://your-real-domain.com/privacy/ https://api.your-real-domain.com
 ```
 
 统一部署细节见 `docs/public-site-deployment.md`。`apps/privacy-site` 和 `apps/checkout-site` 仍可独立构建，分别用于只部署隐私政策或只部署收银台的场景。

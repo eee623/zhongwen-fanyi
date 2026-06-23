@@ -1,6 +1,6 @@
 # 收银台部署
 
-`apps/checkout-site` 是官网订阅收银台的静态站点。它承接 API 返回的 `checkout.checkoutUrl`，从 URL 查询参数读取 `orderId`、`provider`、`packageId`、`statusUrl`、`paymentUrl` 和 `qrCodeUrl`，展示订单号、支付方式、套餐、金额、支付入口、二维码和订单状态。
+`apps/checkout-site` 是官网订阅收银台的静态站点。它承接 API 返回的 `checkout.checkoutUrl`，从 URL 查询参数读取 `orderId`、`provider`、`packageId`、`statusUrl`、支付入口和二维码地址，展示订单号、支付方式、套餐、金额、支付入口、二维码和订单状态。
 
 当前页面不在前端处理支付签名、私钥、预下单或回调验签。真实支付宝/微信支付接入应在服务端完成预下单并生成安全的 HTTPS 支付入口或二维码图片，再把结果传给同一个 `/pay` 页面。
 
@@ -64,9 +64,12 @@ PAYMENT_CHECKOUT_BASE_URL=https://your-domain.example/pay
 
 收银台会额外识别这些 HTTPS 参数：
 
-- `paymentUrl`：支付宝电脑网站支付跳转入口，或微信 H5 支付入口。推荐指向自有后端的支付启动端点，由后端完成支付宝表单输出或微信支付跳转。
-- `qrCodeUrl`：微信 Native 支付二维码图片 URL。推荐由后端把微信返回的 `code_url` 转成 PNG/SVG 图片后提供给前端。
-- `statusUrl`：签名只读订单状态接口。若状态响应体后续返回 `paymentUrl` 或 `qrCodeUrl`，页面会用最新值刷新支付操作区。
+- `alipayPaymentUrl`：支付宝电脑网站支付跳转入口。
+- `wechatPaymentUrl`：微信 H5 或后端托管的微信支付入口。
+- `wechatQrCodeUrl`：微信 Native 支付二维码图片 URL。
+- `paymentUrl`：兼容旧版本的通用支付入口。若没有按渠道返回地址，页面会回退使用它。
+- `qrCodeUrl`：兼容旧版本的通用微信二维码图片。
+- `statusUrl`：签名只读订单状态接口。若状态响应体后续返回上述 HTTPS 字段，页面会用最新值刷新支付操作区。
 
 若需要让收银台查询订单状态，还要配置：
 
@@ -81,7 +84,14 @@ PAYMENT_CHECKOUT_TOKEN_SECRET=random-checkout-status-signing-secret
 
 ## Netlify
 
-若创建 Netlify 项目，推荐项目目录使用 `apps/public-site`，构建命令和发布目录为：
+若创建 Netlify 项目，推荐直接导入仓库根目录。根目录 `netlify.toml` 已包含统一公开站点配置：
+
+```text
+Build command: npm run build:public-site
+Publish directory: apps/public-site/dist
+```
+
+也可以把项目目录设为 `apps/public-site`，构建命令和发布目录为：
 
 ```text
 Build command: npm run build

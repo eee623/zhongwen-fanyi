@@ -26,6 +26,7 @@ describe("public site", () => {
     expect(site.files["index.html"]).toContain("<title>中文同传</title>");
     expect(site.files["index.html"]).toContain('href="/privacy/"');
     expect(site.files["index.html"]).toContain('href="/pay/"');
+    expect(site.files["index.html"]).toContain('rel="canonical" href="https://realtime-dubbing.example/"');
     expect(site.files["index.html"]).toContain("蜀ICP备2026033716号");
     expect(site.files["privacy/index.html"]).toContain('rel="canonical" href="https://realtime-dubbing.example/privacy/"');
     expect(site.files["privacy/index.html"]).toContain("不保存原始音频");
@@ -38,6 +39,8 @@ describe("public site", () => {
     expect(site.files["privacy/index.html"]).not.toContain("正式上架前");
     expect(site.files["privacy/index.html"]).not.toContain('href="/assets/privacy.css"');
     expect(site.files["pay/index.html"]).toContain("中文同传收银台");
+    expect(site.files["sitemap.xml"]).toContain("<loc>https://realtime-dubbing.example/</loc>");
+    expect(site.files["sitemap.xml"]).toContain("<loc>https://realtime-dubbing.example/privacy/</loc>");
     expect(site.files["assets/privacy.css"]).toContain("font-family");
     expect(site.files["assets/checkout.css"]).toContain("prefers-color-scheme");
     expect(site.files["assets/checkout.js"]).toContain("textContent");
@@ -67,13 +70,18 @@ describe("public site", () => {
   });
 
   it("uses a review-friendly static hosting policy", () => {
-    const site = buildPublicSite(policyMarkdown);
+    const site = buildPublicSite(policyMarkdown, {
+      publicBaseUrl: "https://realtime-dubbing.example/"
+    });
 
-    expect(site.files["robots.txt"]).toContain("Allow: /privacy/");
+    expect(site.files["robots.txt"]).toContain("Allow: /");
     expect(site.files["robots.txt"]).toContain("Disallow: /pay/");
+    expect(site.files["robots.txt"]).toContain("Sitemap: https://realtime-dubbing.example/sitemap.xml");
     expect(site.files["_headers"]).toContain("X-Content-Type-Options: nosniff");
+    expect(site.files["_headers"]).toContain("Strict-Transport-Security");
     expect(site.files["_headers"]).toContain("Content-Security-Policy: default-src 'self'");
     expect(site.files["_headers"]).toContain("connect-src https:");
+    expect(site.files["_headers"]).toContain("img-src 'self' https: data:");
     expect(site.files["index.html"]).toContain('href="/assets/public.css"');
     expect(site.files["index.html"]).not.toContain("<style>");
     expect(site.files["index.html"]).not.toContain("<script>");

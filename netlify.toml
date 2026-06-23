@@ -1,0 +1,6 @@
+[build]
+  command = "npm run build:public-site"
+  publish = "apps/public-site/dist"
+
+[build.environment]
+  NODE_VERSION = "22"

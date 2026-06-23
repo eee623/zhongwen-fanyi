@@ -21,13 +21,24 @@ describe("checkout site", () => {
     expect(site.files["index.html"]).toContain('id="payment-link"');
     expect(site.files["index.html"]).toContain('id="qr-code"');
     expect(site.files["index.html"]).toContain('id="polling-state"');
+    expect(site.files["index.html"]).toContain('class="provider-logo alipay-logo"');
+    expect(site.files["index.html"]).toContain('class="provider-logo wechat-logo"');
+    expect(site.files["index.html"]).not.toContain("真实接入边界");
+    expect(site.files["index.html"]).not.toContain("需要后端返回");
+    expect(site.files["index.html"]).not.toContain("后端生成");
+    expect(site.files["index.html"]).not.toContain("paymentUrl");
+    expect(site.files["index.html"]).not.toContain("qrCodeUrl");
+    expect(site.files["index.html"]).not.toContain("statusUrl");
+    expect(site.files["index.html"]).not.toContain("订单状态签名校验");
     expect(site.files["index.html"]).not.toContain("<style>");
     expect(site.files["index.html"]).not.toContain("<script>");
     expect(site.files["index.html"]).not.toContain(String.fromCharCode(8212));
     expect(site.files["assets/checkout.css"]).toContain("prefers-color-scheme");
     expect(site.files["assets/checkout.css"]).toContain(".payment-methods");
+    expect(site.files["assets/checkout.css"]).toContain(".provider-logo");
     expect(site.files["assets/checkout.css"]).toContain(".qr-frame");
     expect(site.files["assets/checkout.js"]).toContain("fetch(statusUrl");
+    expect(site.files["assets/checkout.js"]).toContain("setProviderFromUser");
     expect(site.files["assets/checkout.js"]).toContain("paymentUrl");
     expect(site.files["assets/checkout.js"]).toContain("qrCodeUrl");
     expect(site.files["assets/checkout.js"]).toContain("setInterval");
@@ -80,10 +91,13 @@ describe("checkout site", () => {
 
   it("accepts HTTPS provider payment and QR code URLs for payment handoff", () => {
     const order = checkoutOrderFromSearch(
-      "?orderId=ord_1&provider=wechat&paymentUrl=https%3A%2F%2Fpay.example.com%2Fwechat%2Ford_1&qrCodeUrl=https%3A%2F%2Fpay.example.com%2Fwechat%2Ford_1.png"
+      "?orderId=ord_1&provider=wechat&paymentUrl=https%3A%2F%2Fpay.example.com%2Ffallback%2Ford_1&qrCodeUrl=https%3A%2F%2Fpay.example.com%2Ffallback%2Ford_1.png&alipayPaymentUrl=https%3A%2F%2Fpay.example.com%2Falipay%2Ford_1&wechatPaymentUrl=https%3A%2F%2Fpay.example.com%2Fwechat%2Ford_1&wechatQrCodeUrl=https%3A%2F%2Fpay.example.com%2Fwechat%2Ford_1.png"
     );
 
-    expect(order.paymentUrl).toBe("https://pay.example.com/wechat/ord_1");
-    expect(order.qrCodeUrl).toBe("https://pay.example.com/wechat/ord_1.png");
+    expect(order.paymentUrl).toBe("https://pay.example.com/fallback/ord_1");
+    expect(order.qrCodeUrl).toBe("https://pay.example.com/fallback/ord_1.png");
+    expect(order.alipayPaymentUrl).toBe("https://pay.example.com/alipay/ord_1");
+    expect(order.wechatPaymentUrl).toBe("https://pay.example.com/wechat/ord_1");
+    expect(order.wechatQrCodeUrl).toBe("https://pay.example.com/wechat/ord_1.png");
   });
 });

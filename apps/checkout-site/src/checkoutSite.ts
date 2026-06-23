@@ -11,6 +11,9 @@ export interface CheckoutOrder {
   statusUrl?: string;
   paymentUrl?: string;
   qrCodeUrl?: string;
+  alipayPaymentUrl?: string;
+  wechatPaymentUrl?: string;
+  wechatQrCodeUrl?: string;
 }
 
 export interface CheckoutSite {
@@ -60,7 +63,10 @@ export function checkoutOrderFromSearch(search: string): CheckoutOrder {
     currency: checkoutPackage.currency,
     statusUrl: readHttpsUrl(params.get("statusUrl")),
     paymentUrl: readHttpsUrl(params.get("paymentUrl")),
-    qrCodeUrl: readHttpsUrl(params.get("qrCodeUrl"))
+    qrCodeUrl: readHttpsUrl(params.get("qrCodeUrl")),
+    alipayPaymentUrl: readHttpsUrl(params.get("alipayPaymentUrl")),
+    wechatPaymentUrl: readHttpsUrl(params.get("wechatPaymentUrl")),
+    wechatQrCodeUrl: readHttpsUrl(params.get("wechatQrCodeUrl"))
   };
 }
 
@@ -120,7 +126,7 @@ function renderCheckoutPage(): string {
         <div class="summary-panel">
           <p class="label">安全收银台</p>
           <h1>确认订单并支付</h1>
-          <p class="intro">订单金额由服务端套餐目录生成。支付完成后，分钟数会自动同步到账户。</p>
+          <p class="intro">请核对订单信息，确认无误后完成付款。支付成功后，中文同传额度会自动同步到账户。</p>
           <dl class="details" aria-label="订单信息">
             <div>
               <dt>订单号</dt>
@@ -144,9 +150,9 @@ function renderCheckoutPage(): string {
             </div>
           </dl>
           <div class="assurance-grid" aria-label="支付保障">
-            <p>订单状态签名校验</p>
-            <p>支付平台异步回调入账</p>
-            <p>未支付订单自动过期</p>
+            <p>安全支付保护</p>
+            <p>支付成功自动入账</p>
+            <p>30 分钟内完成付款</p>
           </div>
         </div>
 
@@ -156,12 +162,21 @@ function renderCheckoutPage(): string {
             <p class="payment-title" id="notice">订单读取中</p>
           </div>
           <div class="payment-methods" id="provider-tabs" role="tablist" aria-label="支付渠道">
-            <button class="method-tab active" type="button" data-provider="alipay" role="tab" aria-selected="true">支付宝</button>
-            <button class="method-tab" type="button" data-provider="wechat" role="tab" aria-selected="false">微信支付</button>
+            <button class="method-tab active" type="button" data-provider="alipay" role="tab" aria-selected="true" aria-label="选择支付宝">
+              <span class="provider-logo alipay-logo" aria-hidden="true">支</span>
+              <span>支付宝</span>
+            </button>
+            <button class="method-tab" type="button" data-provider="wechat" role="tab" aria-selected="false" aria-label="选择微信支付">
+              <span class="provider-logo wechat-logo" aria-hidden="true">
+                <span></span>
+                <span></span>
+              </span>
+              <span>微信支付</span>
+            </button>
           </div>
           <div class="pay-action">
             <p class="polling-state" id="polling-state">等待订单状态</p>
-            <div class="qr-frame" id="qr-frame">
+            <div class="qr-frame" id="qr-frame" hidden>
               <img id="qr-code" alt="微信支付二维码" hidden>
               <div class="qr-placeholder" id="qr-placeholder" aria-hidden="true">
                 <span></span>
@@ -170,26 +185,11 @@ function renderCheckoutPage(): string {
                 <span></span>
               </div>
             </div>
-            <a class="payment-link disabled" id="payment-link" href="#" aria-disabled="true">等待支付链接</a>
+            <a class="payment-link disabled" id="payment-link" href="#" aria-disabled="true">立即支付</a>
             <p class="status-copy" id="status-copy">正在读取订单</p>
-          </div>
-          <div class="gateway-note">
-            <p><strong>支付宝</strong>：后端生成电脑网站支付入口，前端只负责跳转。</p>
-            <p><strong>微信支付</strong>：后端生成 Native 支付二维码图片，前端只负责展示和轮询状态。</p>
           </div>
           <button class="refresh" type="button" id="refresh-button">刷新订单状态</button>
         </aside>
-      </section>
-
-      <section class="integration-notes" aria-label="支付接入状态">
-        <article>
-          <h2>真实接入边界</h2>
-          <p>支付签名、预下单、平台回调验签和订单入账都在服务端完成。收银台只接收 HTTPS 的支付入口、二维码图片和签名状态查询地址。</p>
-        </article>
-        <article>
-          <h2>需要后端返回</h2>
-          <p><code>paymentUrl</code> 用于支付宝跳转或微信 H5；<code>qrCodeUrl</code> 用于微信 Native 二维码；<code>statusUrl</code> 用于轮询订单状态。</p>
-        </article>
       </section>
     </main>
 
@@ -322,8 +322,7 @@ a {
 }
 
 .summary-panel,
-.payment-panel,
-.integration-notes article {
+.payment-panel {
   background: rgb(255 255 255 / 0.94);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -430,7 +429,11 @@ dd {
 }
 
 .method-tab {
+  display: inline-flex;
   min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
   color: #4b5570;
   background: transparent;
   border: 0;
@@ -439,6 +442,51 @@ dd {
   font: inherit;
   font-size: 14px;
   font-weight: 900;
+}
+
+.provider-logo {
+  position: relative;
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  place-items: center;
+  color: #ffffff;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.alipay-logo {
+  background: #1677ff;
+  box-shadow: 0 8px 18px rgb(22 119 255 / 0.22);
+}
+
+.wechat-logo {
+  background: #20c45a;
+  box-shadow: 0 8px 18px rgb(32 196 90 / 0.2);
+}
+
+.wechat-logo span {
+  position: absolute;
+  display: block;
+  background: #ffffff;
+  border-radius: 999px;
+}
+
+.wechat-logo span:first-child {
+  top: 7px;
+  left: 5px;
+  width: 12px;
+  height: 9px;
+}
+
+.wechat-logo span:last-child {
+  right: 5px;
+  bottom: 6px;
+  width: 10px;
+  height: 8px;
 }
 
 .method-tab.active {
@@ -489,6 +537,10 @@ dd {
   background-size: 18px 18px;
   border: 1px dashed #c8c2f6;
   border-radius: 8px;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 .qr-frame img {
@@ -546,14 +598,6 @@ dd {
   line-height: 1.55;
 }
 
-.gateway-note {
-  display: grid;
-  gap: 8px;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.6;
-}
-
 .refresh {
   width: 100%;
   color: var(--accent-strong);
@@ -571,36 +615,6 @@ a:focus-visible,
 button:focus-visible {
   outline: 3px solid rgb(104 71 245 / 0.34);
   outline-offset: 3px;
-}
-
-.integration-notes {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  margin-top: 24px;
-}
-
-.integration-notes article {
-  padding: 22px;
-  box-shadow: 0 16px 38px rgb(54 61 95 / 0.07);
-}
-
-.integration-notes h2 {
-  margin: 0 0 10px;
-  font-size: 18px;
-}
-
-.integration-notes p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.75;
-}
-
-code {
-  color: var(--accent-strong);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-weight: 800;
 }
 
 .checkout-footer {
@@ -627,8 +641,7 @@ code {
 }
 
 @media (max-width: 900px) {
-  .checkout-workspace,
-  .integration-notes {
+  .checkout-workspace {
     grid-template-columns: 1fr;
   }
 
@@ -693,8 +706,7 @@ code {
   }
 
   .summary-panel,
-  .payment-panel,
-  .integration-notes article {
+  .payment-panel {
     background: rgb(26 27 32 / 0.94);
   }
 
@@ -777,6 +789,9 @@ function render() {
   const statusUrl = safeHttpsUrl(params.get("statusUrl"));
   const paymentUrl = safeHttpsUrl(params.get("paymentUrl"));
   const qrCodeUrl = safeHttpsUrl(params.get("qrCodeUrl"));
+  const alipayPaymentUrl = safeHttpsUrl(params.get("alipayPaymentUrl"));
+  const wechatPaymentUrl = safeHttpsUrl(params.get("wechatPaymentUrl"));
+  const wechatQrCodeUrl = safeHttpsUrl(params.get("wechatQrCodeUrl"));
   currentOrder = {
     orderId,
     provider,
@@ -786,6 +801,9 @@ function render() {
     statusUrl,
     paymentUrl,
     qrCodeUrl,
+    alipayPaymentUrl,
+    wechatPaymentUrl,
+    wechatQrCodeUrl,
     status: "pending"
   };
   renderOrder(currentOrder);
@@ -820,6 +838,9 @@ function statusPayloadUrl(payload) {
   return {
     paymentUrl: safeHttpsUrl(payload?.paymentUrl) || safeHttpsUrl(checkout.paymentUrl),
     qrCodeUrl: safeHttpsUrl(payload?.qrCodeUrl) || safeHttpsUrl(checkout.qrCodeUrl),
+    alipayPaymentUrl: safeHttpsUrl(payload?.alipayPaymentUrl) || safeHttpsUrl(checkout.alipayPaymentUrl),
+    wechatPaymentUrl: safeHttpsUrl(payload?.wechatPaymentUrl) || safeHttpsUrl(checkout.wechatPaymentUrl),
+    wechatQrCodeUrl: safeHttpsUrl(payload?.wechatQrCodeUrl) || safeHttpsUrl(checkout.wechatQrCodeUrl),
     expiresAt: typeof payload?.expiresAt === "number" ? payload.expiresAt : undefined
   };
 }
@@ -833,7 +854,10 @@ function mergeStatus(order, payload) {
     cancelReason: typeof payload?.cancelReason === "string" ? payload.cancelReason : order.cancelReason,
     expiresAt: urls.expiresAt ?? order.expiresAt,
     paymentUrl: urls.paymentUrl ?? order.paymentUrl,
-    qrCodeUrl: urls.qrCodeUrl ?? order.qrCodeUrl
+    qrCodeUrl: urls.qrCodeUrl ?? order.qrCodeUrl,
+    alipayPaymentUrl: urls.alipayPaymentUrl ?? order.alipayPaymentUrl,
+    wechatPaymentUrl: urls.wechatPaymentUrl ?? order.wechatPaymentUrl,
+    wechatQrCodeUrl: urls.wechatQrCodeUrl ?? order.wechatQrCodeUrl
   };
 }
 
@@ -843,8 +867,8 @@ function startStatusPolling(order) {
     statusTimer = undefined;
   }
   if (!order.statusUrl) {
-    text("status-copy", "订单状态查询未配置");
-    text("polling-state", "等待手动确认");
+    text("status-copy", "支付完成后，请回到本页查看到账结果。");
+    text("polling-state", "等待支付");
     return;
   }
   loadStatus(order.statusUrl);
@@ -903,11 +927,17 @@ function statusLabel(status) {
 
 function renderPaymentAction(order) {
   const paymentLink = document.getElementById("payment-link");
+  const qrFrame = document.getElementById("qr-frame");
   const qrCode = document.getElementById("qr-code");
   const qrPlaceholder = document.getElementById("qr-placeholder");
+  const actionUrl = paymentUrlForProvider(order);
+  const qrUrl = qrCodeUrlForProvider(order);
+  if (qrFrame) {
+    qrFrame.hidden = order.provider !== "wechat";
+  }
   if (qrCode) {
-    if (order.provider === "wechat" && order.qrCodeUrl) {
-      qrCode.src = order.qrCodeUrl;
+    if (order.provider === "wechat" && qrUrl) {
+      qrCode.src = qrUrl;
       qrCode.hidden = false;
       qrCode.alt = "微信支付二维码";
     } else {
@@ -916,12 +946,11 @@ function renderPaymentAction(order) {
     }
   }
   if (qrPlaceholder) {
-    qrPlaceholder.hidden = order.provider === "wechat" && Boolean(order.qrCodeUrl);
+    qrPlaceholder.hidden = order.provider === "wechat" && Boolean(qrUrl);
   }
   if (!paymentLink) {
     return;
   }
-  const actionUrl = order.paymentUrl;
   const hasAction = Boolean(actionUrl) && order.status === "pending";
   paymentLink.classList.toggle("disabled", !hasAction);
   paymentLink.setAttribute("aria-disabled", hasAction ? "false" : "true");
@@ -935,10 +964,40 @@ function renderPaymentAction(order) {
     return;
   }
   if (order.provider === "wechat") {
-    paymentLink.textContent = actionUrl ? "打开微信支付" : "等待微信支付二维码";
+    paymentLink.textContent = actionUrl ? "使用微信支付" : "微信支付准备中";
     return;
   }
-  paymentLink.textContent = actionUrl ? "前往支付宝支付" : "等待支付宝收银台链接";
+  paymentLink.textContent = actionUrl ? "立即用支付宝支付" : "支付宝支付准备中";
+}
+
+function paymentUrlForProvider(order) {
+  if (order.provider === "wechat") {
+    return order.wechatPaymentUrl || order.paymentUrl;
+  }
+  return order.alipayPaymentUrl || order.paymentUrl;
+}
+
+function qrCodeUrlForProvider(order) {
+  if (order.provider === "wechat") {
+    return order.wechatQrCodeUrl || order.qrCodeUrl;
+  }
+  return undefined;
+}
+
+function setProviderFromUser(provider) {
+  if (!currentOrder) {
+    return;
+  }
+  currentOrder = {
+    ...currentOrder,
+    provider: providerId(provider)
+  };
+  const url = new URL(window.location.href);
+  url.searchParams.set("provider", currentOrder.provider);
+  window.history.replaceState(null, "", url.toString());
+  renderOrder(currentOrder);
+  renderPaymentAction(currentOrder);
+  renderStatus(currentOrder);
 }
 
 function formatTime(value) {
@@ -958,6 +1017,11 @@ function formatTime(value) {
 document.addEventListener("DOMContentLoaded", () => {
   render();
   const refresh = document.getElementById("refresh-button");
+  document.querySelectorAll("[data-provider]").forEach((node) => {
+    node.addEventListener("click", () => {
+      setProviderFromUser(node.getAttribute("data-provider"));
+    });
+  });
   if (refresh) {
     refresh.addEventListener("click", () => {
       if (currentOrder?.statusUrl) {
