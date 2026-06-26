@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>中文同传隐私政策</title>
+    <link rel="canonical" href="https://eee623.github.io/zhongwen-fanyi/privacy/">
+    <meta name="description" content="中文同传 Chrome 扩展隐私政策，说明音频、账号、订阅、支付和 Limited Use 数据处理。">
+    <link rel="icon" href="/zhongwen-fanyi/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/zhongwen-fanyi/assets/public.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/zhongwen-fanyi/" aria-label="中文同传首页">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">中文同传</span>
+      </a>
+      <nav class="top-nav" aria-label="主要导航">
+        <a href="/zhongwen-fanyi/">首页</a>
+        <a href="/zhongwen-fanyi/#plans">套餐</a>
+        <a href="/zhongwen-fanyi/privacy/" aria-current="page">隐私政策</a>
+        <a href="mailto:eeelj65@gmail.com">联系我们</a>
+      </nav>
+      <a class="nav-button" href="/zhongwen-fanyi/#plans">查看套餐</a>
+    </header>
+
+    <main class="policy-page">
+      <section class="policy-hero" aria-labelledby="policy-title">
+        <p class="eyebrow compact">隐私保护 · 数据最小化 · 用户可控</p>
+        <h1 id="policy-title">中文同传隐私政策</h1>
+        <p>我们把隐私政策放在产品网站内部，和订阅、收银台、备案信息保持同一个访问入口。</p>
+      </section>
+      <article class="policy-content">
+        <p>最后更新：2026-06-22</p>
+        <p>中文同传是一款 Chrome 扩展，用于在用户主动点击启动后，把当前标签页中的英语音频实时翻译成中文字幕和中文配音。扩展默认不保存原始音频，不保存声纹，不把用户数据出售、转让给广告平台，也不会把用户数据用于与实时翻译、配音、计费和故障诊断无关的用途。</p>
+        <h2>我们处理哪些数据</h2>
+        <ul><li>当前标签页音频：仅在用户主动点击启动同传后处理，用于实时语音识别、翻译、中文配音和原声音量混音。用户点击停止、关闭标签页或刷新页面后，应立即停止捕获和传输。</li><li>字幕和译声音频：用于在当前页面展示中文字幕，并在浏览器内播放中文译声。</li><li>极速预听文本：开启极速预听时，扩展会用浏览器或系统提供的本地中文语音播放已返回的中文字幕文本，用于降低可听中文首声延迟；这不会新增原始音频上传或声纹处理。</li><li>账号和订阅数据：用于登录状态、套餐、剩余翻译分钟数、并发限制和服务可用性判断。</li><li>支付数据：用于支付宝、微信支付等订阅或充值订单的状态确认、额度入账、退款/取消订阅处理和对账。</li><li>延迟和诊断日志：用于统计首个中文文本、首个中文音频、实际播放时间等 P50/P95 指标，帮助排查实时同传体验。</li></ul>
+        <h2>数据如何流转</h2>
+        <p>扩展不会在客户端保存阿里 API Key。用户启动同传后，当前标签页音频会发送到我们的自有后端；后端再代理到阿里百炼实时翻译服务，用于生成中文字幕和中文译声音频。返回的文本和音频片段会发送回扩展，用于即时展示和播放。</p>
+        <h2>数据保留</h2>
+        <p>默认不保存原始音频，不保存声纹。我们只保留计费、额度、并发限制、支付对账和延迟诊断所需的最小化日志。生产上线前，具体保留周期应在正式官网隐私政策中列明，并与实际数据库、日志系统和支付系统配置保持一致。</p>
+        <h2>Limited Use</h2>
+        <p>我们遵守 Chrome Web Store User Data Policy 和 Limited Use 要求。用户数据只用于提供和维护实时翻译、中文字幕、中文配音、订阅计费、并发限制、额度扣减、支付对账、退款/取消订阅处理和故障诊断。我们不会出售用户数据，不会把用户数据用于广告投放，不会把用户数据用于与产品核心功能无关的模型训练或画像。</p>
+        <h2>用户控制</h2>
+        <p>音频捕获只能由用户主动点击启动。用户可以随时点击停止，停止后扩展应立即断开音频流和后端连接。对于本地文件页面，用户还需要在 Chrome 扩展详情页主动允许 `file://` 页面访问。</p>
+        <h2>联系方式</h2>
+        <p>eeelj65@gmail.com</p>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <p>© 2026 保留所有权利</p>
+      <nav aria-label="页脚导航">
+        <a href="/zhongwen-fanyi/privacy/">隐私政策</a>
+        <a href="/zhongwen-fanyi/pay/">用户协议</a>
+        <a href="https://beian.miit.gov.cn/" rel="noopener">蜀ICP备2026033716号</a>
+      </nav>
+    </footer>
+  </body>
+</html>

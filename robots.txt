@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /pay/
+Sitemap: https://eee623.github.io/zhongwen-fanyi/sitemap.xml
