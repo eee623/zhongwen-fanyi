@@ -214,6 +214,12 @@ npm run public-site:release-urls -- https://your-real-domain.com
 # 输出目录：apps/public-site/dist
 ```
 
+GitHub Pages 项目页这类子路径部署使用：
+
+```bash
+PUBLIC_SITE_BASE_URL=https://eee623.github.io/zhongwen-fanyi PUBLIC_SITE_BASE_PATH=/zhongwen-fanyi npm run build:public-site
+```
+
 部署后使用：
 
 ```text

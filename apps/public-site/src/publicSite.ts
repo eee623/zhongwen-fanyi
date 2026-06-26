@@ -3,6 +3,7 @@ import { buildPrivacyPolicySite } from "../../privacy-site/src/privacySite";
 
 export interface PublicSiteOptions {
   publicBaseUrl?: string;
+  publicBasePath?: string;
 }
 
 export interface PublicSiteAsset {
@@ -32,6 +33,7 @@ const productAssets: PublicSiteAsset[] = [
 
 export function buildPublicSite(markdown: string, options: PublicSiteOptions = {}): PublicSite {
   const baseUrl = options.publicBaseUrl ? trimTrailingSlash(options.publicBaseUrl) : undefined;
+  const basePath = normalizeBasePath(options.publicBasePath);
   const homeCanonicalUrl = baseUrl ? `${baseUrl}/` : undefined;
   const privacyCanonicalUrl = baseUrl ? `${baseUrl}/privacy/` : undefined;
   const privacy = buildPrivacyPolicySite(markdown, { canonicalUrl: privacyCanonicalUrl });
@@ -39,9 +41,9 @@ export function buildPublicSite(markdown: string, options: PublicSiteOptions = {
 
   return {
     files: {
-      "index.html": renderHomePage(homeCanonicalUrl),
-      "privacy/index.html": renderPrivacyPage(markdown, privacyCanonicalUrl),
-      "pay/index.html": requireFile(checkout.files, "pay/index.html"),
+      "index.html": renderHomePage(homeCanonicalUrl, basePath),
+      "privacy/index.html": renderPrivacyPage(markdown, privacyCanonicalUrl, basePath),
+      "pay/index.html": rewriteAbsoluteSitePaths(requireFile(checkout.files, "pay/index.html"), basePath),
       "assets/public.css": renderStylesheet(),
       "assets/privacy.css": requireFile(privacy.files, "assets/privacy.css"),
       "assets/checkout.css": requireFile(checkout.files, "assets/checkout.css"),
@@ -67,7 +69,32 @@ function trimTrailingSlash(value: string): string {
   return value.trim().replace(/\/+$/, "");
 }
 
-function renderHomePage(canonicalUrl?: string): string {
+function normalizeBasePath(value?: string): string {
+  if (!value) {
+    return "";
+  }
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === "/") {
+    return "";
+  }
+  return `/${trimmed.replace(/^\/+|\/+$/g, "")}`;
+}
+
+function sitePath(basePath: string, path: string): string {
+  if (!basePath || !path.startsWith("/")) {
+    return path;
+  }
+  return `${basePath}${path}`;
+}
+
+function rewriteAbsoluteSitePaths(html: string, basePath: string): string {
+  if (!basePath) {
+    return html;
+  }
+  return html.replaceAll('href="/', `href="${basePath}/`).replaceAll('src="/', `src="${basePath}/`);
+}
+
+function renderHomePage(canonicalUrl?: string, basePath = ""): string {
   const [homeImage, planImage, checkoutImage] = productAssets;
   const canonicalLink = canonicalUrl ? `\n    <link rel="canonical" href="${escapeHtml(canonicalUrl)}">` : "";
 
@@ -82,11 +109,11 @@ function renderHomePage(canonicalUrl?: string): string {
     <meta property="og:title" content="中文同传">
     <meta property="og:description" content="浏览器实时中文同传插件，支持英文视频转中文字幕和中文配音。">
     <meta property="og:type" content="website">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="/assets/public.css">
+    <link rel="icon" href="${sitePath(basePath, "/favicon.svg")}" type="image/svg+xml">
+    <link rel="stylesheet" href="${sitePath(basePath, "/assets/public.css")}">
   </head>
   <body>
-    ${renderSiteHeader("home")}
+    ${renderSiteHeader("home", basePath)}
 
     <main>
       <section class="hero" id="home" aria-labelledby="site-title">
@@ -118,7 +145,7 @@ function renderHomePage(canonicalUrl?: string): string {
           </dl>
         </div>
         <figure class="hero-visual">
-          <img src="/${homeImage.outputPath}" alt="中文同传首页页面展示" width="1672" height="941">
+          <img src="${sitePath(basePath, `/${homeImage.outputPath}`)}" alt="中文同传首页页面展示" width="1672" height="941">
         </figure>
       </section>
 
@@ -138,11 +165,11 @@ function renderHomePage(canonicalUrl?: string): string {
               <li>支持网页播放器与 Chrome 本地 mp4/webm 视频</li>
               <li>支持音量混音和字幕大小调节</li>
             </ul>
-            <a class="button primary full" href="/pay/?packageId=pro_20m_cny_39&amp;provider=alipay">立即订阅</a>
+            <a class="button primary full" href="${sitePath(basePath, "/pay/?packageId=pro_20m_cny_39&amp;provider=alipay")}">立即订阅</a>
             <p class="refund-note">未使用额度可按服务协议申请退款</p>
           </article>
           <figure class="image-panel">
-            <img src="/${planImage.outputPath}" alt="专业版套餐页面展示" width="1672" height="941">
+            <img src="${sitePath(basePath, `/${planImage.outputPath}`)}" alt="专业版套餐页面展示" width="1672" height="941">
           </figure>
         </div>
       </section>
@@ -152,10 +179,10 @@ function renderHomePage(canonicalUrl?: string): string {
           <p class="eyebrow compact">安全支付 · 隐私保护</p>
           <h2 id="checkout-title">清晰的订单确认流程</h2>
           <p>支付前展示商品、金额、支付方式和订单状态。付款成功后，额度会自动充值到账号。</p>
-          <a class="button secondary" href="/pay/?packageId=pro_20m_cny_39&amp;provider=alipay">查看收银台</a>
+          <a class="button secondary" href="${sitePath(basePath, "/pay/?packageId=pro_20m_cny_39&amp;provider=alipay")}">查看收银台</a>
         </div>
         <figure class="checkout-visual">
-          <img src="/${checkoutImage.outputPath}" alt="订单确认页面展示" width="1672" height="941">
+          <img src="${sitePath(basePath, `/${checkoutImage.outputPath}`)}" alt="订单确认页面展示" width="1672" height="941">
         </figure>
       </section>
 
@@ -178,13 +205,13 @@ function renderHomePage(canonicalUrl?: string): string {
       </section>
     </main>
 
-    ${renderSiteFooter()}
+    ${renderSiteFooter(basePath)}
   </body>
 </html>
 `;
 }
 
-function renderPrivacyPage(markdown: string, canonicalUrl?: string): string {
+function renderPrivacyPage(markdown: string, canonicalUrl?: string, basePath = ""): string {
   const title = extractTitle(markdown) ?? "中文同传隐私政策";
   const canonicalLink = canonicalUrl ? `\n    <link rel="canonical" href="${escapeHtml(canonicalUrl)}">` : "";
 
@@ -195,11 +222,11 @@ function renderPrivacyPage(markdown: string, canonicalUrl?: string): string {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${escapeHtml(title)}</title>${canonicalLink}
     <meta name="description" content="中文同传 Chrome 扩展隐私政策，说明音频、账号、订阅、支付和 Limited Use 数据处理。">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="/assets/public.css">
+    <link rel="icon" href="${sitePath(basePath, "/favicon.svg")}" type="image/svg+xml">
+    <link rel="stylesheet" href="${sitePath(basePath, "/assets/public.css")}">
   </head>
   <body>
-    ${renderSiteHeader("privacy")}
+    ${renderSiteHeader("privacy", basePath)}
 
     <main class="policy-page">
       <section class="policy-hero" aria-labelledby="policy-title">
@@ -212,21 +239,21 @@ function renderPrivacyPage(markdown: string, canonicalUrl?: string): string {
       </article>
     </main>
 
-    ${renderSiteFooter()}
+    ${renderSiteFooter(basePath)}
   </body>
 </html>
 `;
 }
 
-function renderSiteHeader(active: "home" | "privacy"): string {
-  const homeHref = active === "home" ? "#home" : "/";
-  const plansHref = active === "home" ? "#plans" : "/#plans";
-  const ctaHref = active === "home" ? "#plans" : "/#plans";
+function renderSiteHeader(active: "home" | "privacy", basePath = ""): string {
+  const homeHref = active === "home" ? "#home" : sitePath(basePath, "/");
+  const plansHref = active === "home" ? "#plans" : sitePath(basePath, "/#plans");
+  const ctaHref = active === "home" ? "#plans" : sitePath(basePath, "/#plans");
   const homeCurrent = active === "home" ? ' aria-current="page"' : "";
   const privacyCurrent = active === "privacy" ? ' aria-current="page"' : "";
 
   return `<header class="site-header">
-      <a class="brand" href="/" aria-label="中文同传首页">
+      <a class="brand" href="${sitePath(basePath, "/")}" aria-label="中文同传首页">
         <span class="brand-mark" aria-hidden="true"></span>
         <span class="brand-name">中文同传</span>
         <span class="brand-company">四川笑希软件有限公司</span>
@@ -234,19 +261,19 @@ function renderSiteHeader(active: "home" | "privacy"): string {
       <nav class="top-nav" aria-label="主要导航">
         <a href="${homeHref}"${homeCurrent}>首页</a>
         <a href="${plansHref}">套餐</a>
-        <a href="/privacy/"${privacyCurrent}>隐私政策</a>
+        <a href="${sitePath(basePath, "/privacy/")}"${privacyCurrent}>隐私政策</a>
         <a href="mailto:eeelj65@gmail.com">联系我们</a>
       </nav>
       <a class="nav-button" href="${ctaHref}">查看套餐</a>
     </header>`;
 }
 
-function renderSiteFooter(): string {
+function renderSiteFooter(basePath = ""): string {
   return `<footer class="site-footer">
       <p>© 2026 四川笑希软件有限公司　保留所有权利</p>
       <nav aria-label="页脚导航">
-        <a href="/privacy/">隐私政策</a>
-        <a href="/pay/">用户协议</a>
+        <a href="${sitePath(basePath, "/privacy/")}">隐私政策</a>
+        <a href="${sitePath(basePath, "/pay/")}">用户协议</a>
         <a href="mailto:eeelj65@gmail.com">eeelj65@gmail.com</a>
         <a href="https://beian.miit.gov.cn/" rel="noopener">蜀ICP备2026033716号</a>
       </nav>

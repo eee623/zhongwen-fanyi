@@ -69,6 +69,26 @@ describe("public site", () => {
     ]);
   });
 
+  it("can render links and assets below a GitHub Pages project path", () => {
+    const site = buildPublicSite(policyMarkdown, {
+      publicBaseUrl: "https://eee623.github.io/zhongwen-fanyi",
+      publicBasePath: "/zhongwen-fanyi/"
+    });
+
+    expect(site.files["index.html"]).toContain('href="/zhongwen-fanyi/assets/public.css"');
+    expect(site.files["index.html"]).toContain(
+      'src="/zhongwen-fanyi/assets/product/7b579892-ccf1-42cc-b8a8-36b4be626d83.png"'
+    );
+    expect(site.files["index.html"]).toContain(
+      'href="/zhongwen-fanyi/pay/?packageId=pro_20m_cny_39&amp;provider=alipay"'
+    );
+    expect(site.files["privacy/index.html"]).toContain('href="/zhongwen-fanyi/#plans"');
+    expect(site.files["privacy/index.html"]).toContain('href="/zhongwen-fanyi/privacy/" aria-current="page"');
+    expect(site.files["pay/index.html"]).toContain('href="/zhongwen-fanyi/assets/checkout.css"');
+    expect(site.files["pay/index.html"]).toContain('src="/zhongwen-fanyi/assets/checkout.js" defer');
+    expect(site.files["sitemap.xml"]).toContain("<loc>https://eee623.github.io/zhongwen-fanyi/privacy/</loc>");
+  });
+
   it("uses a review-friendly static hosting policy", () => {
     const site = buildPublicSite(policyMarkdown, {
       publicBaseUrl: "https://realtime-dubbing.example/"

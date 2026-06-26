@@ -9,7 +9,8 @@ const projectRoot = new URL("../../../", import.meta.url);
 
 const policyMarkdown = await readFile(policyPath, "utf8");
 const site = buildPublicSite(policyMarkdown, {
-  publicBaseUrl: process.env.PUBLIC_SITE_BASE_URL
+  publicBaseUrl: process.env.PUBLIC_SITE_BASE_URL,
+  publicBasePath: process.env.PUBLIC_SITE_BASE_PATH
 });
 
 await rm(distRoot, { recursive: true, force: true });

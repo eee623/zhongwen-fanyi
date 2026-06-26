@@ -25,6 +25,40 @@ apps/public-site/dist
 
 正式上线时必须把 `PUBLIC_SITE_BASE_URL` 换成真实 HTTPS 产品域名。这个值会写入首页 canonical、隐私政策 canonical、`robots.txt` 的 Sitemap 行和 `sitemap.xml`。
 
+如果站点部署在子路径下，例如 GitHub Pages 项目页 `https://eee623.github.io/zhongwen-fanyi/`，还要设置 `PUBLIC_SITE_BASE_PATH`，否则 CSS、JS、图片和站内链接会按域名根路径加载：
+
+```bash
+PUBLIC_SITE_BASE_URL=https://eee623.github.io/zhongwen-fanyi \
+PUBLIC_SITE_BASE_PATH=/zhongwen-fanyi \
+npm run build:public-site
+```
+
+正式独立域名通常不需要 `PUBLIC_SITE_BASE_PATH`。
+
+## GitHub Pages 预览发布
+
+当前 GitHub 登录凭据不需要 `workflow` 权限也能发布预览站：把 `apps/public-site/dist` 提交到 `gh-pages` 分支，然后让 GitHub Pages 从该分支根目录读取。
+
+本地构建命令：
+
+```bash
+PUBLIC_SITE_BASE_URL=https://eee623.github.io/zhongwen-fanyi \
+PUBLIC_SITE_BASE_PATH=/zhongwen-fanyi \
+npm run build:public-site
+```
+
+发布内容目录：
+
+```text
+apps/public-site/dist
+```
+
+预览地址：
+
+```text
+https://eee623.github.io/zhongwen-fanyi/
+```
+
 ## Netlify 从 GitHub 部署
 
 仓库根目录已经提供 `netlify.toml`，导入 GitHub 仓库后使用默认根目录即可：
