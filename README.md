@@ -1,19 +1,15 @@
 # 中文同传 Dubbing
 
-## 最简单部署方式：静态前端，不需要 Node.js
+## 最简单部署方式：纯 HTML，不需要 Node.js
 
-如果你只是要官网能打开，服务器上什么都不用装。仓库根目录已经放好了正式前端静态文件：
+如果你只是要官网能打开，服务器上什么都不用装。仓库根目录已经放好了纯静态文件：
 
 ```text
 index.html
 privacy/index.html
 pay/index.html
-assets/public.css
-assets/checkout.css
-assets/checkout.js
-assets/product/*.png
-favicon.svg
-robots.txt
+assets/site.css
+store-assets/public-site/*.png
 ```
 
 部署方法：
@@ -24,7 +20,7 @@ robots.txt
 4. 把解压后的整个文件夹上传到服务器的网站根目录，例如宝塔的 `wwwroot/你的域名/`。
 5. 访问你的域名即可打开。
 
-不要在服务器上运行 `npm install`，不要运行 `npm run build`。服务器只需要托管这些静态文件。
+不要在服务器上运行 `npm install`，不要运行 `npm run build`。这套静态页面不需要任何依赖。
 
 如果用 Netlify，直接导入 GitHub 仓库即可。当前 `netlify.toml` 是无构建配置：
 
@@ -33,7 +29,7 @@ Publish directory: .
 Build command: 留空
 ```
 
-根目录静态页面只是官网展示和收银台前端。`assets/checkout.js` 是浏览器端脚本，服务器不需要安装任何依赖。真实同传服务、真实支付宝/微信扣款、额度入账仍需要后端 API 和商户密钥；如果暂时只要“网站能打开”，不用管后端。
+根目录静态页面只是官网展示和收银台外观。真实同传服务、真实支付宝/微信扣款、额度入账仍需要后端 API 和商户密钥；如果暂时只要“网站能打开”，不用管后端。
 
 ## 工程源码说明
 
