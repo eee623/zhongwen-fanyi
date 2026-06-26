@@ -256,7 +256,6 @@ function renderSiteHeader(active: "home" | "privacy", basePath = ""): string {
       <a class="brand" href="${sitePath(basePath, "/")}" aria-label="中文同传首页">
         <span class="brand-mark" aria-hidden="true"></span>
         <span class="brand-name">中文同传</span>
-        <span class="brand-company">四川笑希软件有限公司</span>
       </a>
       <nav class="top-nav" aria-label="主要导航">
         <a href="${homeHref}"${homeCurrent}>首页</a>
@@ -270,11 +269,10 @@ function renderSiteHeader(active: "home" | "privacy", basePath = ""): string {
 
 function renderSiteFooter(basePath = ""): string {
   return `<footer class="site-footer">
-      <p>© 2026 四川笑希软件有限公司　保留所有权利</p>
+      <p>© 2026 保留所有权利</p>
       <nav aria-label="页脚导航">
         <a href="${sitePath(basePath, "/privacy/")}">隐私政策</a>
         <a href="${sitePath(basePath, "/pay/")}">用户协议</a>
-        <a href="mailto:eeelj65@gmail.com">eeelj65@gmail.com</a>
         <a href="https://beian.miit.gov.cn/" rel="noopener">蜀ICP备2026033716号</a>
       </nav>
     </footer>`;
@@ -456,13 +454,6 @@ a {
   font-size: 27px;
   font-weight: 950;
   line-height: 1;
-  white-space: nowrap;
-}
-
-.brand-company {
-  color: var(--muted);
-  font-size: 15px;
-  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -948,10 +939,6 @@ h3 {
 
   .brand-name {
     font-size: 23px;
-  }
-
-  .brand-company {
-    display: none;
   }
 
   .nav-button {

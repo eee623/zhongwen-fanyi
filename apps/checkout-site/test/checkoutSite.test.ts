@@ -51,6 +51,14 @@ describe("checkout site", () => {
     expect(site.files["robots.txt"]).toContain("Disallow: /");
   });
 
+  it("omits company and footer email from the checkout chrome", () => {
+    const site = buildCheckoutSite();
+
+    expect(site.files["index.html"]).not.toContain("brand-subtitle");
+    expect(site.files["index.html"]).not.toContain("四川笑希软件有限公司");
+    expect(site.files["index.html"]).not.toContain("eeelj65@gmail.com");
+  });
+
   it("parses and escapes checkout URL params", () => {
     const order = checkoutOrderFromSearch(
       "?orderId=ord_%3Cscript%3E&provider=wechat&packageId=pro_20m_cny_39&statusUrl=https%3A%2F%2Fapi.example.com%2Fv1%2Fpayment-orders%2Ford_1%2Fstatus%3Ftoken%3Dabc"

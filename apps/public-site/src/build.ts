@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { chmod, copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildPublicSite } from "./publicSite";
@@ -26,6 +26,7 @@ for (const asset of site.assets) {
   const sourcePath = fileURLToPath(new URL(asset.sourcePath, projectRoot));
   await mkdir(dirname(outputPath), { recursive: true });
   await copyFile(sourcePath, outputPath);
+  await chmod(outputPath, 0o644);
 }
 
 console.log(`Public site built at ${distRoot}`);

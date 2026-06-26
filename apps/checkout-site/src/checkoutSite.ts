@@ -117,7 +117,6 @@ function renderCheckoutPage(): string {
         <span class="brand-mark" aria-hidden="true"></span>
         <span class="brand-copy">
           <span class="brand-name">中文同传</span>
-          <span class="brand-subtitle">四川笑希软件有限公司</span>
         </span>
       </a>
       <a class="support-link" href="/privacy/">隐私政策</a>
@@ -200,10 +199,9 @@ function renderCheckoutPage(): string {
     </main>
 
     <footer class="checkout-footer">
-      <p>© 2026 四川笑希软件有限公司</p>
+      <p>© 2026</p>
       <nav aria-label="页脚导航">
         <a href="/privacy/">隐私政策</a>
-        <a href="mailto:eeelj65@gmail.com">eeelj65@gmail.com</a>
         <a href="https://beian.miit.gov.cn/" rel="noopener">蜀ICP备2026033716号</a>
       </nav>
     </footer>
@@ -305,7 +303,6 @@ a {
   line-height: 1;
 }
 
-.brand-subtitle,
 .support-link {
   color: var(--muted);
   font-size: 14px;
@@ -687,10 +684,6 @@ button:focus-visible {
   .checkout-footer {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .brand-subtitle {
-    display: none;
   }
 
   .shell {

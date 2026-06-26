@@ -17,6 +17,11 @@ const policyMarkdown = [
   "eeelj65@gmail.com"
 ].join("\n");
 
+function footerFrom(html: string): string {
+  const match = html.match(/<footer[\s\S]*?<\/footer>/);
+  return match?.[0] ?? "";
+}
+
 describe("public site", () => {
   it("combines the public privacy policy and checkout into one deployable site", () => {
     const site = buildPublicSite(policyMarkdown, {
@@ -44,6 +49,17 @@ describe("public site", () => {
     expect(site.files["assets/privacy.css"]).toContain("font-family");
     expect(site.files["assets/checkout.css"]).toContain("prefers-color-scheme");
     expect(site.files["assets/checkout.js"]).toContain("textContent");
+  });
+
+  it("omits company and footer email from the public chrome", () => {
+    const site = buildPublicSite(policyMarkdown);
+
+    expect(site.files["index.html"]).not.toContain("brand-company");
+    expect(site.files["index.html"]).not.toContain("四川笑希软件有限公司");
+    expect(footerFrom(site.files["index.html"])).not.toContain("eeelj65@gmail.com");
+    expect(site.files["privacy/index.html"]).not.toContain("brand-company");
+    expect(site.files["privacy/index.html"]).not.toContain("四川笑希软件有限公司");
+    expect(footerFrom(site.files["privacy/index.html"])).not.toContain("eeelj65@gmail.com");
   });
 
   it("uses the prepared product images as home page assets", () => {
